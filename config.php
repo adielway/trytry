@@ -1,17 +1,15 @@
 <?php
-// Update these with your hosting DB credentials
-define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
-define('DB_NAME', getenv('DB_NAME') ?: 'grading_portal');
-define('DB_USER', getenv('DB_USER') ?: 'root');
-define('DB_PASS', getenv('DB_PASS') ?: '');
+$servername = "sql303.infinityfree.com";  // your MySQL Host Name
+$username = "if0_39945938";               // your MySQL Username
+$password = "password123";                // your MySQL Password
+$dbname = "if0_39945938_grading_portal";  // your full Database Name
 
 try {
-    $pdo = new PDO("mysql:host=".DB_HOST.";dbname=".DB_NAME.";charset=utf8mb4", DB_USER, DB_PASS, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-    ]);
-} catch (PDOException $e) {
-    die("Database connection failed: " . htmlspecialchars($e->getMessage()));
+    $conn = new PDO("mysql:host=$servername;dbname=$dbname;charset=utf8", $username, $password);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    // echo "Connected successfully";
+} catch(PDOException $e) {
+    echo "Database connection failed: " . $e->getMessage();
 }
 
 session_start();
