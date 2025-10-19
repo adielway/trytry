@@ -55,13 +55,13 @@ function redirect_to_dashboard() {
             header("Location: /admin/dashboard.php");
             break;
         case 'teacher':
-            header("Location: dashboard.php");
+            header("Location: /dashboard.php");
             break;
         case 'student':
-            header("Location: dashboard.php");
+            header("Location: /dashboard.php");
             break;
         case 'parent':
-            header("Location: dashboard.php");
+            header("Location: /dashboard.php");
             break;
         default:
             header("Location: /login.php");
