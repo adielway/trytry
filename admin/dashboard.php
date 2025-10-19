@@ -154,7 +154,7 @@ $subjectCount = $pdo->query("SELECT COUNT(*) FROM subjects")->fetchColumn();
 
   <!-- Toggle Button (Image) -->
   <div class="toggle-btn" onclick="toggleSidebar()">
-    <img src="logo.png" alt="Toggle Sidebar">
+    <img src="../logo.png" alt="Toggle Sidebar">
   </div>
 
   <!-- Main Content -->

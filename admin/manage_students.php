@@ -93,6 +93,28 @@ $students = $pdo->query("SELECT s.id, s.student_no, s.name, s.class, u.email FRO
     .btn-primary:hover {
       background-color: #0f78d1;
     }
+
+    /* Toggle Button (Image) */
+    .toggle-btn {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 1100;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .toggle-btn img {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      object-fit: cover;
+    }
+
+    .toggle-btn:hover {
+      transform: scale(1.1);
+    }
   </style>
 </head>
 <body>
@@ -106,7 +128,7 @@ $students = $pdo->query("SELECT s.id, s.student_no, s.name, s.class, u.email FRO
   </div>
 
   <div class="toggle-btn" onclick="toggleSidebar()">
-  <img src="logo.png" alt="Toggle Sidebar">
+  <img src="../logo.png" alt="Toggle Sidebar">
 </div>
 
 
