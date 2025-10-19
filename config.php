@@ -1,13 +1,14 @@
 <?php
-$servername = "anhs-portal-scoutmillares-01eb.j.aivencloud.com";  // your MySQL Host Name
-$username = "avnadmin";               // your MySQL Username
-$password = "AVNS_322bJX9DQixmhc9yXzJ";                // your MySQL Password
-$dbname = "defaultdb";  // your full Database Name
+$host = "dpg-d3q4mjripnbc73aa95f0-a.singapore-postgres.render.com";
+$port = "5432";
+$dbname = "grading_portal";
+$username = "grading_portal_user";
+$password = "qlgWv6WZFRTWTO4zRObNiw7oVN6Kzdn5";
 
 try {
-    $conn = new PDO("mysql:host=$servername;dbname=$dbname;charset=utf8", $username, $password);
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    // echo "Connected successfully";
+    // Use PostgreSQL PDO connection instead of MySQL
+    $pdo = new PDO("pgsql:host=dpg-d3q4mjripnbc73aa95f0-a.singapore-postgres.render.com;port=5432;dbname=grading_portal", "grading_portal_user", "qlgWv6WZFRTWTO4zRObNiw7oVN6Kzdn5");
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch(PDOException $e) {
     echo "Database connection failed: " . $e->getMessage();
 }
