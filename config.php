@@ -7,7 +7,7 @@ $password = "qlgWv6WZFRTWTO4zRObNiw7oVN6Kzdn5";
 
 try {
     // Use PostgreSQL PDO connection instead of MySQL
-    $pdo = new PDO("pgsql:host=$host;port=$port;dbname=$dbname", $username, $password);
+    $pdo = new PDO("pgsql:host=dpg-d3q4mjripnbc73aa95f0-a.singapore-postgres.render.com;port=5432;dbname=grading_portal", "grading_portal_user", "qlgWv6WZFRTWTO4zRObNiw7oVN6Kzdn5");
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch(PDOException $e) {
     echo "Database connection failed: " . $e->getMessage();
