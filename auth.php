@@ -9,23 +9,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $stmt->execute([$email]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-   function redirect_to_dashboard() {
-    // Ensure session is active
-    if (!isset($_SESSION['user']) || !isset($_SESSION['user']['role'])) {
+    if ($user && password_verify($password, $user['password_hash'])) {
+        // Store user info in session
+        $_SESSION['user'] = [
+            'id' => (int)$user['id'],
+            'name' => $user['name'],
+            'email' => $user['email'],
+            'role' => $user['role']
+        ];
+
+        // ✅ Redirect based on role (defined in config.php)
+        redirect_to_dashboard();
+    } else {
+        $_SESSION['error'] = "Invalid email or password.";
         header("Location: login.php");
         exit;
     }
-
-    $role = $_SESSION['user']['role'];
-
-    // ✅ Only admin goes to admin/dashboard.php
-    if ($role === 'admin') {
-        header("Location: admin/dashboard.php");
-    } else {
-        header("Location: dashboard.php"); // teacher, student, parent
-    }
-    exit;
-}
-
 }
 ?>
