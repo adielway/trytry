@@ -23,7 +23,9 @@ $subjects = $pdo->query("SELECT * FROM subjects ORDER BY id ASC")->fetchAll(PDO:
       color: #fff;
       min-height: 100vh;
       display: flex;
+      overflow-x: hidden;
     }
+
     body::before {
       content: "";
       position: fixed;
@@ -33,19 +35,29 @@ $subjects = $pdo->query("SELECT * FROM subjects ORDER BY id ASC")->fetchAll(PDO:
       opacity: 0.25;
       z-index: -1;
     }
+
+    /* Sidebar */
     .sidebar {
       width: 250px;
       background: rgba(0, 51, 102, 0.95);
       padding-top: 20px;
       position: fixed;
       height: 100vh;
+      transition: transform 0.3s ease;
+      z-index: 1000;
     }
+
+    .sidebar.collapsed {
+      transform: translateX(-100%);
+    }
+
     .sidebar h3 {
       color: #fff;
       text-align: center;
       margin-bottom: 1rem;
       font-weight: 600;
     }
+
     .sidebar a {
       color: #dce3f3;
       text-decoration: none;
@@ -54,16 +66,26 @@ $subjects = $pdo->query("SELECT * FROM subjects ORDER BY id ASC")->fetchAll(PDO:
       border-left: 3px solid transparent;
       transition: all 0.2s ease;
     }
-    .sidebar a:hover, .sidebar a.active {
+
+    .sidebar a:hover,
+    .sidebar a.active {
       background-color: rgba(255, 255, 255, 0.1);
       border-left: 3px solid #4ea1ff;
       color: #fff;
     }
+
+    /* Main */
     .main {
       margin-left: 250px;
       padding: 30px;
       flex-grow: 1;
+      transition: margin-left 0.3s ease;
     }
+
+    .main.full {
+      margin-left: 0 !important;
+    }
+
     .card {
       border: none;
       border-radius: 12px;
@@ -71,19 +93,23 @@ $subjects = $pdo->query("SELECT * FROM subjects ORDER BY id ASC")->fetchAll(PDO:
       background: rgba(255, 255, 255, 0.12);
       color: #fff;
     }
+
     .table {
       color: #fff;
       background: rgba(255, 255, 255, 0.12);
       border-radius: 8px;
       overflow: hidden;
     }
+
     .table thead {
       background: rgba(255, 255, 255, 0.15);
     }
+
     .btn-primary {
       background-color: #1e90ff;
       border: none;
     }
+
     .btn-primary:hover {
       background-color: #0f78d1;
     }
@@ -112,7 +138,8 @@ $subjects = $pdo->query("SELECT * FROM subjects ORDER BY id ASC")->fetchAll(PDO:
   </style>
 </head>
 <body>
-  <div class="sidebar">
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
     <h3><i class="bi bi-speedometer2"></i> Admin Panel</h3>
     <a href="dashboard.php"><i class="bi bi-house-door"></i> Dashboard</a>
     <a href="manage_teachers.php"><i class="bi bi-person-badge"></i> Manage Teachers</a>
@@ -121,15 +148,21 @@ $subjects = $pdo->query("SELECT * FROM subjects ORDER BY id ASC")->fetchAll(PDO:
     <a href="../logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a>
   </div>
 
+  <!-- Toggle Button -->
   <div class="toggle-btn" onclick="toggleSidebar()">
-  <img src="../logo.png" alt="Toggle Sidebar">
-</div>
+    <img src="../logo.png" alt="Toggle Sidebar">
+  </div>
 
-  <div class="main">
+  <!-- Main Content -->
+  <div class="main" id="main">
     <h2 class="mb-4">Manage Subjects</h2>
     <form method="POST" class="row g-3 mb-4">
-      <div class="col-md-8"><input type="text" name="name" class="form-control" placeholder="Subject Name" required></div>
-      <div class="col-12 text-end"><button class="btn btn-primary">Add Subject</button></div>
+      <div class="col-md-8">
+        <input type="text" name="name" class="form-control" placeholder="Subject Name" required>
+      </div>
+      <div class="col-12 text-end">
+        <button class="btn btn-primary">Add Subject</button>
+      </div>
     </form>
 
     <table class="table table-bordered table-hover">
@@ -146,6 +179,7 @@ $subjects = $pdo->query("SELECT * FROM subjects ORDER BY id ASC")->fetchAll(PDO:
       </tbody>
     </table>
   </div>
+
   <script>
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
@@ -154,7 +188,5 @@ $subjects = $pdo->query("SELECT * FROM subjects ORDER BY id ASC")->fetchAll(PDO:
       main.classList.toggle('full');
     }
   </script>
-
 </body>
- 
 </html>
