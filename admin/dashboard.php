@@ -144,7 +144,7 @@ $subjectCount = $pdo->query("SELECT COUNT(*) FROM subjects")->fetchColumn();
 
   <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
-    <h3><i class="bi bi-speedometer2"></i> Admin Panel</h3>
+    <h3>Admin Panel</h3>
     <a href="dashboard.php" class="active"><i class="bi bi-house-door"></i> Dashboard</a>
     <a href="manage_teachers.php"><i class="bi bi-person-badge"></i> Manage Teachers</a>
     <a href="manage_students.php"><i class="bi bi-mortarboard"></i> Manage Students</a>
@@ -154,7 +154,7 @@ $subjectCount = $pdo->query("SELECT COUNT(*) FROM subjects")->fetchColumn();
 
   <!-- Toggle Button (Image) -->
   <div class="toggle-btn" onclick="toggleSidebar()">
-    <img src="logo.png" alt="Toggle Sidebar">
+    <img src="../logo.png" alt="Toggle Sidebar">
   </div>
 
   <!-- Main Content -->

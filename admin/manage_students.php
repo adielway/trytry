@@ -151,7 +151,7 @@ ORDER BY s.id ASC")->fetchAll(PDO::FETCH_ASSOC);
 <body>
   <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
-    <h3><i class="bi bi-speedometer2"></i> Admin Panel</h3>
+    <h3>Admin Panel</h3>
     <a href="dashboard.php"><i class="bi bi-house-door"></i> Dashboard</a>
     <a href="manage_teachers.php"><i class="bi bi-person-badge"></i> Manage Teachers</a>
     <a href="manage_students.php" class="active"><i class="bi bi-mortarboard"></i> Manage Students</a>

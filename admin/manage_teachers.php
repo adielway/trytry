@@ -144,7 +144,7 @@ $teachers = $pdo->query("SELECT * FROM users WHERE role='teacher' ORDER BY id AS
 <body>
   <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
-    <h3><i class="bi bi-speedometer2"></i> Admin Panel</h3>
+    <h3>Admin Panel</h3>
     <a href="dashboard.php"><i class="bi bi-house-door"></i> Dashboard</a>
     <a href="manage_teachers.php" class="active"><i class="bi bi-person-badge"></i> Manage Teachers</a>
     <a href="manage_students.php"><i class="bi bi-mortarboard"></i> Manage Students</a>
