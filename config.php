@@ -1,8 +1,8 @@
 <?php
-$servername = "sql303.infinityfree.com";  // your MySQL Host Name
-$username = "if0_39945938";               // your MySQL Username
-$password = "password123";                // your MySQL Password
-$dbname = "if0_39945938_grading_portal";  // your full Database Name
+$servername = "anhs-portal-scoutmillares-01eb.j.aivencloud.com";  // your MySQL Host Name
+$username = "avnadmin";               // your MySQL Username
+$password = "AVNS_322bJX9DQixmhc9yXzJ";                // your MySQL Password
+$dbname = "defaultdb";  // your full Database Name
 
 try {
     $conn = new PDO("mysql:host=$servername;dbname=$dbname;charset=utf8", $username, $password);
