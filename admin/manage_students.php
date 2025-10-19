@@ -13,6 +13,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $userId = $pdo->lastInsertId();
   $pdo->prepare("INSERT INTO students (student_no, name, class, user_id) VALUES (?, ?, ?, ?)")
       ->execute(['S-' . str_pad($userId, 4, '0', STR_PAD_LEFT), $name, $class, $userId]);
+
+       header("Location: manage_students.php");
+  exit;
 }
 
 $students = $pdo->query("SELECT s.id, s.student_no, s.name, s.class, u.email 

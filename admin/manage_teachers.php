@@ -9,10 +9,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   $stmt = $pdo->prepare("INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, 'teacher')");
   $stmt->execute([$name, $email, $password]);
-}
 
+  
 header("Location: manage_teachers.php");
 exit;
+}
 
 
 $teachers = $pdo->query("SELECT * FROM users WHERE role='teacher' ORDER BY id ASC")->fetchAll(PDO::FETCH_ASSOC);

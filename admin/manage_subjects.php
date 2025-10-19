@@ -5,6 +5,9 @@ require_role(['admin']);
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $name = $_POST['name'];
   $pdo->prepare("INSERT INTO subjects (name) VALUES (?)")->execute([$name]);
+
+   header("Location: manage_subjects.php");
+  exit;
 }
 
 $subjects = $pdo->query("SELECT * FROM subjects ORDER BY id ASC")->fetchAll(PDO::FETCH_ASSOC);
