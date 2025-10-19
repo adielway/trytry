@@ -2,8 +2,5 @@ services:
   - type: web
     name: grading-portal
     env: php
-    buildCommand: |
-      apt-get update
-      apt-get install -y libpq-dev
-      docker-php-ext-install pdo pdo_pgsql pgsql
+    buildCommand: ./render-build.sh
     startCommand: php -S 0.0.0.0:10000 -t .
