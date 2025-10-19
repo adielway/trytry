@@ -30,6 +30,10 @@ $subjects = $pdo->query("SELECT * FROM subjects ORDER BY id ASC")->fetchAll(PDO:
     <a href="../logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a>
   </div>
 
+  <div class="toggle-btn" onclick="toggleSidebar()">
+  <img src="logo.png" alt="Toggle Sidebar">
+</div>
+
   <div class="main">
     <h2 class="mb-4">Manage Subjects</h2>
     <form method="POST" class="row g-3 mb-4">
@@ -52,4 +56,12 @@ $subjects = $pdo->query("SELECT * FROM subjects ORDER BY id ASC")->fetchAll(PDO:
     </table>
   </div>
 </body>
+ <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const main = document.getElementById('main');
+      sidebar.classList.toggle('collapsed');
+      main.classList.toggle('full');
+    }
+  </script>
 </html>

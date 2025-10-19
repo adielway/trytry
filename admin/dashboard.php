@@ -44,6 +44,14 @@ $subjectCount = $pdo->query("SELECT COUNT(*) FROM subjects")->fetchColumn();
       flex-direction: column;
       height: 100vh;
       position: fixed;
+      left: 0;
+      top: 0;
+      transition: transform 0.3s ease;
+      z-index: 1000;
+    }
+
+    .sidebar.collapsed {
+      transform: translateX(-100%);
     }
 
     .sidebar h3 {
@@ -62,23 +70,45 @@ $subjectCount = $pdo->query("SELECT COUNT(*) FROM subjects")->fetchColumn();
       transition: all 0.2s ease;
     }
 
-    .sidebar a:hover {
+    .sidebar a:hover,
+    .sidebar a.active {
       background-color: rgba(255, 255, 255, 0.1);
       border-left: 3px solid #4ea1ff;
       color: #fff;
     }
 
-    .sidebar a.active {
-      background-color: rgba(255, 255, 255, 0.15);
-      border-left: 3px solid #1e90ff;
-      color: #fff;
+    /* Toggle Button (Image) */
+    .toggle-btn {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 1100;
+      cursor: pointer;
+      transition: transform 0.2s ease;
     }
 
-    /* Main content */
+    .toggle-btn img {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      object-fit: cover;
+    }
+
+    .toggle-btn:hover {
+      transform: scale(1.1);
+    }
+
+    /* Main Content */
     .main {
       margin-left: 250px;
       padding: 30px;
       flex-grow: 1;
+      transition: margin-left 0.3s ease;
+    }
+
+    .main.full {
+      margin-left: 0;
     }
 
     .dashboard-header {
@@ -86,10 +116,6 @@ $subjectCount = $pdo->query("SELECT COUNT(*) FROM subjects")->fetchColumn();
       align-items: center;
       justify-content: space-between;
       margin-bottom: 30px;
-    }
-
-    .dashboard-header h2 {
-      font-weight: 600;
     }
 
     .card {
@@ -106,17 +132,6 @@ $subjectCount = $pdo->query("SELECT COUNT(*) FROM subjects")->fetchColumn();
       background: rgba(255, 255, 255, 0.18);
     }
 
-    .card h3 {
-      font-size: 2rem;
-      margin-bottom: 0;
-    }
-
-    .card p {
-      margin-top: 4px;
-      font-weight: 300;
-      color: #c8d7f0;
-    }
-
     .footer {
       text-align: center;
       color: #9cb4dd;
@@ -128,7 +143,7 @@ $subjectCount = $pdo->query("SELECT COUNT(*) FROM subjects")->fetchColumn();
 <body>
 
   <!-- Sidebar -->
-  <div class="sidebar">
+  <div class="sidebar" id="sidebar">
     <h3><i class="bi bi-speedometer2"></i> Admin Panel</h3>
     <a href="dashboard.php" class="active"><i class="bi bi-house-door"></i> Dashboard</a>
     <a href="manage_teachers.php"><i class="bi bi-person-badge"></i> Manage Teachers</a>
@@ -137,8 +152,13 @@ $subjectCount = $pdo->query("SELECT COUNT(*) FROM subjects")->fetchColumn();
     <a href="../logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a>
   </div>
 
+  <!-- Toggle Button (Image) -->
+  <div class="toggle-btn" onclick="toggleSidebar()">
+    <img src="logo.png" alt="Toggle Sidebar">
+  </div>
+
   <!-- Main Content -->
-  <div class="main">
+  <div class="main" id="main">
     <div class="dashboard-header">
       <h2>Welcome, <?= htmlspecialchars($_SESSION['user']['name']) ?></h2>
       <span class="text-light-50 small">Administrator Dashboard</span>
@@ -151,14 +171,12 @@ $subjectCount = $pdo->query("SELECT COUNT(*) FROM subjects")->fetchColumn();
           <p><i class="bi bi-person-badge-fill"></i> Teachers</p>
         </div>
       </div>
-
       <div class="col-md-4">
         <div class="card p-4 text-center shadow-sm">
           <h3><?= $studentCount ?></h3>
           <p><i class="bi bi-mortarboard-fill"></i> Students</p>
         </div>
       </div>
-
       <div class="col-md-4">
         <div class="card p-4 text-center shadow-sm">
           <h3><?= $subjectCount ?></h3>
@@ -172,5 +190,13 @@ $subjectCount = $pdo->query("SELECT COUNT(*) FROM subjects")->fetchColumn();
     </div>
   </div>
 
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const main = document.getElementById('main');
+      sidebar.classList.toggle('collapsed');
+      main.classList.toggle('full');
+    }
+  </script>
 </body>
 </html>
