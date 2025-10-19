@@ -153,8 +153,7 @@ $teachers = $pdo->query("SELECT * FROM users WHERE role='teacher' ORDER BY id AS
       </tbody>
     </table>
   </div>
-</body>
- <script>
+  <script>
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
       const main = document.getElementById('main');
@@ -162,4 +161,6 @@ $teachers = $pdo->query("SELECT * FROM users WHERE role='teacher' ORDER BY id AS
       main.classList.toggle('full');
     }
   </script>
+</body>
+ 
 </html>

@@ -159,8 +159,7 @@ $students = $pdo->query("SELECT s.id, s.student_no, s.name, s.class, u.email FRO
       </tbody>
     </table>
   </div>
-</body>
- <script>
+  <script>
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
       const main = document.getElementById('main');
@@ -168,4 +167,7 @@ $students = $pdo->query("SELECT s.id, s.student_no, s.name, s.class, u.email FRO
       main.classList.toggle('full');
     }
   </script>
+
+</body>
+
 </html>

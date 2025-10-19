@@ -146,8 +146,7 @@ $subjects = $pdo->query("SELECT * FROM subjects ORDER BY id ASC")->fetchAll(PDO:
       </tbody>
     </table>
   </div>
-</body>
- <script>
+  <script>
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
       const main = document.getElementById('main');
@@ -155,4 +154,7 @@ $subjects = $pdo->query("SELECT * FROM subjects ORDER BY id ASC")->fetchAll(PDO:
       main.classList.toggle('full');
     }
   </script>
+
+</body>
+ 
 </html>
