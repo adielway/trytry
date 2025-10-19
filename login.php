@@ -1,9 +1,9 @@
 <?php
 require_once __DIR__ . '/config.php';
 if (is_logged_in()) {
-    header("Location: dashboard.php");
-    exit;
+    redirect_to_dashboard();
 }
+
 $error = $_SESSION['error'] ?? null;
 unset($_SESSION['error']);
 ?>
