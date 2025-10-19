@@ -17,7 +17,76 @@ $subjects = $pdo->query("SELECT * FROM subjects ORDER BY id ASC")->fetchAll(PDO:
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <style>
-    <?php include 'style.css'; ?>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0b1d39;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: url('../anhs.jpg') no-repeat center center fixed;
+      background-size: cover;
+      opacity: 0.25;
+      z-index: -1;
+    }
+    .sidebar {
+      width: 250px;
+      background: rgba(0, 51, 102, 0.95);
+      padding-top: 20px;
+      position: fixed;
+      height: 100vh;
+    }
+    .sidebar h3 {
+      color: #fff;
+      text-align: center;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+    .sidebar a {
+      color: #dce3f3;
+      text-decoration: none;
+      padding: 12px 20px;
+      display: block;
+      border-left: 3px solid transparent;
+      transition: all 0.2s ease;
+    }
+    .sidebar a:hover, .sidebar a.active {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-left: 3px solid #4ea1ff;
+      color: #fff;
+    }
+    .main {
+      margin-left: 250px;
+      padding: 30px;
+      flex-grow: 1;
+    }
+    .card {
+      border: none;
+      border-radius: 12px;
+      backdrop-filter: blur(8px);
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+    .table {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .table thead {
+      background: rgba(255, 255, 255, 0.15);
+    }
+    .btn-primary {
+      background-color: #1e90ff;
+      border: none;
+    }
+    .btn-primary:hover {
+      background-color: #0f78d1;
+    }
   </style>
 </head>
 <body>
