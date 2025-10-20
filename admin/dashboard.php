@@ -3,7 +3,7 @@ require_once '../config.php';
 require_role(['admin']);
 
 $teacherCount = $pdo->query("SELECT COUNT(*) FROM users WHERE role='teacher'")->fetchColumn();
-$adviserrCount = $pdo->query("SELECT COUNT(*) FROM users WHERE role='adviser'")->fetchColumn();
+$adviserCount = $pdo->query("SELECT COUNT(*) FROM users WHERE role='adviser'")->fetchColumn();
 $studentCount = $pdo->query("SELECT COUNT(*) FROM users WHERE role='student'")->fetchColumn();
 $subjectCount = $pdo->query("SELECT COUNT(*) FROM subjects")->fetchColumn();
 ?>
