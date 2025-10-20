@@ -3,6 +3,7 @@ require_once '../config.php';
 require_role(['admin']);
 
 $teacherCount = $pdo->query("SELECT COUNT(*) FROM users WHERE role='teacher'")->fetchColumn();
+$adviserrCount = $pdo->query("SELECT COUNT(*) FROM users WHERE role='adviser'")->fetchColumn();
 $studentCount = $pdo->query("SELECT COUNT(*) FROM users WHERE role='student'")->fetchColumn();
 $subjectCount = $pdo->query("SELECT COUNT(*) FROM subjects")->fetchColumn();
 ?>
@@ -146,7 +147,9 @@ $subjectCount = $pdo->query("SELECT COUNT(*) FROM subjects")->fetchColumn();
   <div class="sidebar" id="sidebar">
     <h3>Admin Panel</h3>
     <a href="dashboard.php" class="active"><i class="bi bi-house-door"></i> Dashboard</a>
+    <a href="manage_advisers.php"><i class="bi bi-person-badge"></i> Manage Advisers</a>
     <a href="manage_teachers.php"><i class="bi bi-person-badge"></i> Manage Teachers</a>
+    <a href="assign_students.php"><i class="bi bi-person-lines-fill"></i> Assign Students</a>
     <a href="manage_students.php"><i class="bi bi-mortarboard"></i> Manage Students</a>
     <a href="manage_subjects.php"><i class="bi bi-book"></i> Manage Subjects</a>
     <a href="../logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a>
@@ -169,6 +172,12 @@ $subjectCount = $pdo->query("SELECT COUNT(*) FROM subjects")->fetchColumn();
         <div class="card p-4 text-center shadow-sm">
           <h3><?= $teacherCount ?></h3>
           <p><i class="bi bi-person-badge-fill"></i> Teachers</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card p-4 text-center shadow-sm">
+          <h3><?= $adviserCount ?></h3>
+          <p><i class="bi bi-person-badge-fill"></i> Advisers</p>
         </div>
       </div>
       <div class="col-md-4">
