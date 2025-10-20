@@ -144,10 +144,12 @@ $subjects = $pdo->query("SELECT * FROM subjects ORDER BY id ASC")->fetchAll(PDO:
   <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
     <h3>Admin Panel</h3>
-    <a href="dashboard.php"><i class="bi bi-house-door"></i> Dashboard</a>
+    <a href="dashboard.php" class="active"><i class="bi bi-house-door"></i> Dashboard</a>
+    <a href="manage_advisers.php"><i class="bi bi-person-badge"></i> Manage Advisers</a>
     <a href="manage_teachers.php"><i class="bi bi-person-badge"></i> Manage Teachers</a>
+    <a href="assign_students.php"><i class="bi bi-person-lines-fill"></i> Assign Students</a>
     <a href="manage_students.php"><i class="bi bi-mortarboard"></i> Manage Students</a>
-    <a href="manage_subjects.php" class="active"><i class="bi bi-book"></i> Manage Subjects</a>
+    <a href="manage_subjects.php"><i class="bi bi-book"></i> Manage Subjects</a>
     <a href="../logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a>
   </div>
 
