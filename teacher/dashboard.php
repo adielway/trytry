@@ -4,7 +4,7 @@ require_role(['teacher']);
 
 $user = $_SESSION['user'];
 
-// 1️⃣ Fetch assigned subjects for this teacher
+// Fetch assigned subjects for this teacher
 $stmt = $pdo->prepare("
   SELECT s.id, s.name 
   FROM assigned_subjects a
@@ -15,27 +15,12 @@ $stmt = $pdo->prepare("
 $stmt->execute([$user['id']]);
 $subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// 2️⃣ Get section(s) where this teacher is an adviser (optional)
-$stmt = $pdo->prepare("
-  SELECT id, section, school_year 
-  FROM advisers 
-  WHERE user_id = ?
-");
-$stmt->execute([$user['id']]);
-$adviser = $stmt->fetch(PDO::FETCH_ASSOC);
-
-// 3️⃣ Fetch students only in their section (if adviser)
-$students = [];
-if ($adviser) {
-  $stmt = $pdo->prepare("
-    SELECT id, student_no, name, class 
-    FROM students 
-    WHERE adviser_id = ?
-    ORDER BY name ASC
-  ");
-  $stmt->execute([$adviser['id']]);
-  $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
+// Fetch all students (teachers are not advisers)
+$students = $pdo->query("
+  SELECT id, student_no, name, class 
+  FROM students 
+  ORDER BY name ASC
+")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!doctype html>
 <html lang="en">
@@ -108,17 +93,11 @@ if ($adviser) {
         <?php endforeach; ?>
       </ul>
     <?php endif; ?>
-
-    <?php if ($adviser): ?>
-      <p class="mt-3"><strong>Adviser Section:</strong> <?= h($adviser['section']) ?> (<?= h($adviser['school_year']) ?>)</p>
-    <?php else: ?>
-      <p class="text-warning">You are not an adviser of any section.</p>
-    <?php endif; ?>
   </div>
 
-  <?php if ($adviser && !empty($subjects)): ?>
+  <?php if (!empty($subjects)): ?>
   <div class="card p-4 shadow-sm">
-    <h4>Manage Grades — <?= h($adviser['section']) ?></h4>
+    <h4>Manage Grades</h4>
 
     <div class="mb-3">
       <label class="form-label">Select Subject</label>
@@ -181,7 +160,7 @@ if ($adviser) {
   </div>
   <?php else: ?>
   <div class="alert alert-warning mt-4">
-    You currently have no assigned section or subjects.
+    You currently have no assigned subjects.
   </div>
   <?php endif; ?>
 </div>
