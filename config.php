@@ -58,7 +58,7 @@ function redirect_to_dashboard() {
             header("Location: /adviser/dashboard.php");
             break;
         case 'teacher':
-            header("Location: /dashboard.php");
+            header("Location: /teacher/dashboard.php");
             break;
         case 'student':
             header("Location: /dashboard.php");
