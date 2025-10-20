@@ -42,29 +42,36 @@ if (isset($_POST['action']) && $_POST['action'] === 'assign_subject') {
   $teacher_id = $_POST['teacher_id'];
   $subject_id = $_POST['subject_id'];
 
-  $stmt = $pdo->prepare("INSERT INTO assigned_subjects (teacher_id, subject_id) VALUES (?, ?) ON CONFLICT DO NOTHING");
-  $stmt->execute([$teacher_id, $subject_id]);
+  // Prevent duplicate assignments
+  $check = $pdo->prepare("SELECT 1 FROM assigned_subjects WHERE teacher_id = ? AND subject_id = ?");
+  $check->execute([$teacher_id, $subject_id]);
+  if (!$check->fetch()) {
+    $stmt = $pdo->prepare("INSERT INTO assigned_subjects (teacher_id, subject_id) VALUES (?, ?)");
+    $stmt->execute([$teacher_id, $subject_id]);
+  }
 
   header("Location: manage_teachers.php");
   exit;
 }
 
-// Fetch all teachers
+// --- FETCH TEACHERS ---
 $teachers = $pdo->query("
-  SELECT u.id, u.name, u.email, 
-  COALESCE(GROUP_CONCAT(s.name SEPARATOR ', '), '—') AS subjects
+  SELECT 
+    u.id, 
+    u.name, 
+    u.email, 
+    COALESCE(STRING_AGG(s.name, ', '), '—') AS subjects
   FROM users u
   LEFT JOIN assigned_subjects asg ON u.id = asg.teacher_id
   LEFT JOIN subjects s ON asg.subject_id = s.id
-  WHERE u.role='teacher'
+  WHERE u.role = 'teacher'
   GROUP BY u.id, u.name, u.email
   ORDER BY u.id ASC
 ")->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch subjects for dropdown
+// --- FETCH SUBJECTS ---
 $subjects = $pdo->query("SELECT id, name FROM subjects ORDER BY name ASC")->fetchAll(PDO::FETCH_ASSOC);
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -215,14 +222,10 @@ $subjects = $pdo->query("SELECT id, name FROM subjects ORDER BY name ASC")->fetc
             </form>
 
             <!-- Edit -->
-            <form method="POST" class="d-inline">
-              <input type="hidden" name="action" value="edit">
-              <input type="hidden" name="id" value="<?= $t['id'] ?>">
-              <button type="button" class="btn btn-sm btn-warning" 
-                onclick="openEditModal('<?= $t['id'] ?>','<?= htmlspecialchars($t['name']) ?>','<?= htmlspecialchars($t['email']) ?>')">
-                Edit
-              </button>
-            </form>
+            <button type="button" class="btn btn-sm btn-warning"
+              onclick="openEditModal('<?= $t['id'] ?>','<?= htmlspecialchars($t['name']) ?>','<?= htmlspecialchars($t['email']) ?>')">
+              Edit
+            </button>
 
             <!-- Delete -->
             <form method="POST" class="d-inline">
