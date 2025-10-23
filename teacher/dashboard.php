@@ -138,7 +138,7 @@ $students = $pdo->query("
               </select>
             </td>
             <td>
-              <form method="post" action="../grade_save.php" class="d-flex gap-2">
+              <form method="post" action="/teacher/grade_save.php" class="d-flex gap-2">
                 <input type="hidden" name="student_id" value="<?= $st['id'] ?>">
                 <input type="hidden" name="subject_id" class="subjectInput">
                 <input type="hidden" name="period" class="quarterHidden">
@@ -147,7 +147,7 @@ $students = $pdo->query("
               </form>
             </td>
             <td>
-              <form method="post" action="../grade_delete.php" onsubmit="return confirm('Delete all grades for this student?');">
+              <form method="post" action="/teacher/grade_delete.php" onsubmit="return confirm('Delete all grades for this student?');">
                 <input type="hidden" name="student_id" value="<?= $st['id'] ?>">
                 <button class="btn btn-danger btn-sm">Delete</button>
               </form>
