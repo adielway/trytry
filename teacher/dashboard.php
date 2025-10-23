@@ -15,6 +15,16 @@ $stmt = $pdo->prepare("
 $stmt->execute([$user['id']]);
 $subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+//Fetch grades
+$stmt = $pdo->prepare("
+  SELECT g.id, sub.name AS subject, g.grade, g.created_at
+  FROM grades g
+  JOIN subjects sub ON sub.id = g.subject_id
+  WHERE g.student_id = ? AND g.period = ?
+  ORDER BY sub.name
+");
+
+
 // Fetch all students (teachers are not advisers)
 $students = $pdo->query("
   SELECT id, student_no, name, class 
