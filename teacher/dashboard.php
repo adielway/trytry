@@ -200,10 +200,12 @@ if ($selected_student) {
           <button class="btn btn-warning btn-sm" onclick="toggleEdit(<?= $grade_id ?>)">Edit</button>
         <?php endif; ?>
 
-        <form method="post" action="/teacher/grade_delete.php" onsubmit="return confirm('Delete all grades for this student?');" class="d-inline">
-          <input type="hidden" name="student_id" value="<?= $st['id'] ?>">
-          <button class="btn btn-danger btn-sm">Delete</button>
-        </form>
+        <form method="post" action="/teacher/grade_delete.php" onsubmit="return confirm('Delete this student\'s grade?');" class="d-inline">
+  <input type="hidden" name="student_id" value="<?= $st['id'] ?>">
+  <input type="hidden" name="subject_id" class="subjectInput">
+  <button class="btn btn-danger btn-sm">Delete</button>
+</form>
+
       </td>
     </tr>
   <?php endforeach; ?>
