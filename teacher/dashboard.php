@@ -157,13 +157,13 @@ if ($selected_student) {
               </select>
             </td>
             <td>
-              <form method="post" action="/teacher/grade_save.php" class="d-flex gap-2">
-                <input type="hidden" name="student_id" value="<?= $st['id'] ?>">
-                <input type="hidden" name="subject_id" value="<?= $subject_id ?>">
-                <input type="hidden" name="period" class="quarterHidden">
-                <input type="number" step="0.01" min="0" max="100" name="grade" class="form-control form-control-sm" required>
-                <button class="btn btn-primary btn-sm">Save</button>
-              </form>
+              <form method="post" action="/teacher/grade_save.php" class="gradeForm d-flex gap-2 align-items-center">
+              <input type="hidden" name="student_id" value="<?= $st['id'] ?>">
+              <input type="hidden" name="subject_id" class="subjectInput">
+              <input type="hidden" name="period" class="quarterHidden">
+              <input type="number" step="0.01" min="0" max="100" name="grade" class="form-control form-control-sm" required>
+              <button class="btn btn-primary btn-sm">Save</button>
+            </form>
             </td>
             <td>
               <form method="post" action="/teacher/grade_delete.php" onsubmit="return confirm('Delete all grades for this student?');">
@@ -188,17 +188,30 @@ if ($selected_student) {
 $(document).ready(function() {
   $('#studentsTable').DataTable();
 
-  // When teacher selects a subject or quarter, update hidden inputs
+  // Update all subject inputs when a subject is selected
   $('#subjectSelect').on('change', function() {
     const subjectId = $(this).val();
     $('.subjectInput').val(subjectId);
   });
 
+  // Update period field when teacher selects quarter
   $('.quarterInput').on('change', function() {
     const quarterVal = $(this).val();
     $(this).closest('tr').find('.quarterHidden').val(quarterVal);
   });
+
+  // Ensure subject and quarter are chosen before submitting
+  $('.gradeForm').on('submit', function(e) {
+    const subjectVal = $('.subjectInput').first().val();
+    const quarterVal = $(this).find('.quarterHidden').val();
+
+    if (!subjectVal || !quarterVal) {
+      alert('Please select a subject and a quarter before saving.');
+      e.preventDefault();
+    }
+  });
 });
+
 </script>
 </body>
 </html>
