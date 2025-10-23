@@ -15,22 +15,31 @@ $stmt = $pdo->prepare("
 $stmt->execute([$user['id']]);
 $subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-//Fetch grades
-$stmt = $pdo->prepare("
-  SELECT g.id, sub.name AS subject, g.grade, g.created_at
-  FROM grades g
-  JOIN subjects sub ON sub.id = g.subject_id
-  WHERE g.student_id = ? AND g.period = ?
-  ORDER BY sub.name
-");
-
-
 // Fetch all students (teachers are not advisers)
 $students = $pdo->query("
   SELECT id, student_no, name, class 
   FROM students 
   ORDER BY name ASC
 ")->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch grades for a selected student (if applicable)
+$selected_student = isset($_GET['student']) ? (int)$_GET['student'] : null;
+$grades_by_q = [];
+
+if ($selected_student) {
+    for ($period = 1; $period <= 4; $period++) {
+        $stmt = $pdo->prepare("
+            SELECT g.id, sub.name AS subject, g.grade, g.created_at
+            FROM grades g
+            JOIN subjects sub ON sub.id = g.subject_id
+            WHERE g.student_id = ? AND g.period = ?
+            ORDER BY sub.name
+        ");
+        $stmt->execute([$selected_student, $period]);
+        $grades_by_q[$period] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+}
+
 ?>
 <!doctype html>
 <html lang="en">
