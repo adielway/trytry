@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/config.php';
-require_login();
+require_once __DIR__ . '/../config.php';
+require_role(['teacher']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id     = (int)($_POST['id'] ?? 0);
@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $period = $_POST['period'] ?? null;
 
     if ($id && $grade !== null && $period !== null) {
-        // Ensure grade is numeric and within range
+        // Sanitize
         $grade = max(0, min(100, floatval($grade)));
         $period = (int)$period;
 
@@ -17,6 +17,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Redirect back to dashboard
 header("Location: dashboard.php");
 exit;
