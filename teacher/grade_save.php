@@ -9,7 +9,7 @@ $grade = floatval($_POST['grade'] ?? 0);
 
 if (!$student_id || !$subject_id || !$period || $grade < 0 || $grade > 100) {
     $_SESSION['error'] = "Invalid input.";
-    header("Location: dashboard.php?student=" . $student_id);
+    header("Location: dashboard.php" . $student_id);
     exit;
 }
 
@@ -21,5 +21,5 @@ $stmt = $pdo->prepare("
 $stmt->execute([$student_id, $subject_id, $period, $grade, $_SESSION['user']['id']]);
 
 $_SESSION['message'] = "Grade saved successfully.";
-header("Location: dashboard.php?student=" . $student_id);
+header("Location: dashboard.php" . $student_id);
 exit;

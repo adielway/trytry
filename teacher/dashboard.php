@@ -140,7 +140,7 @@ $students = $pdo->query("
             <td>
               <form method="post" action="/teacher/grade_save.php" class="d-flex gap-2">
                 <input type="hidden" name="student_id" value="<?= $st['id'] ?>">
-                <input type="hidden" name="subject_id" class="subjectInput">
+                <input type="hidden" name="subject_id" value="<?= $subject_id ?>">
                 <input type="hidden" name="period" class="quarterHidden">
                 <input type="number" step="0.01" min="0" max="100" name="grade" class="form-control form-control-sm" required>
                 <button class="btn btn-primary btn-sm">Save</button>
