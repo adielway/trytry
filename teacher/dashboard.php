@@ -188,29 +188,31 @@ if ($selected_student) {
 $(document).ready(function() {
   $('#studentsTable').DataTable();
 
-  // When a subject is selected, set it for all forms
+  let selectedSubject = '';
+  
+  // Store the current selected subject globally
   $('#subjectSelect').on('change', function() {
-    const subjectId = $(this).val();
-    $('.subjectInput').val(subjectId); // update hidden field in each form
+    selectedSubject = $(this).val();
   });
 
-  // When a quarter is selected, store it in the same row
-  $('.quarterInput').on('change', function() {
-    const quarterVal = $(this).val();
-    $(this).closest('tr').find('.quarterHidden').val(quarterVal);
-  });
-
-  // Validate subject and quarter per form submission
+  // Handle form submission safely
   $('.gradeForm').on('submit', function(e) {
-    const subjectVal = $(this).find('.subjectInput').val();
-    const quarterVal = $(this).find('.quarterHidden').val();
+    const quarterVal = $(this).closest('tr').find('.quarterInput').val();
 
-    if (!subjectVal || !quarterVal) {
+    // Always reassign selected subject and quarter before submit
+    $(this).find('.subjectInput').val(selectedSubject);
+    $(this).find('.quarterHidden').val(quarterVal);
+
+    const subjectVal = $(this).find('.subjectInput').val();
+    const periodVal  = $(this).find('.quarterHidden').val();
+
+    if (!subjectVal || !periodVal) {
       alert('Please select a subject and a quarter before saving.');
       e.preventDefault();
     }
   });
 });
+
 </script>
 </body>
 </html>
