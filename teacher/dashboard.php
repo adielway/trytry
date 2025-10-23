@@ -188,21 +188,21 @@ if ($selected_student) {
 $(document).ready(function() {
   $('#studentsTable').DataTable();
 
-  // Update all subject inputs when a subject is selected
+  // When a subject is selected, set it for all forms
   $('#subjectSelect').on('change', function() {
     const subjectId = $(this).val();
-    $('.subjectInput').val(subjectId);
+    $('.subjectInput').val(subjectId); // update hidden field in each form
   });
 
-  // Update period field when teacher selects quarter
+  // When a quarter is selected, store it in the same row
   $('.quarterInput').on('change', function() {
     const quarterVal = $(this).val();
     $(this).closest('tr').find('.quarterHidden').val(quarterVal);
   });
 
-  // Ensure subject and quarter are chosen before submitting
+  // Validate subject and quarter per form submission
   $('.gradeForm').on('submit', function(e) {
-    const subjectVal = $('.subjectInput').first().val();
+    const subjectVal = $(this).find('.subjectInput').val();
     const quarterVal = $(this).find('.quarterHidden').val();
 
     if (!subjectVal || !quarterVal) {
@@ -211,7 +211,6 @@ $(document).ready(function() {
     }
   });
 });
-
 </script>
 </body>
 </html>
