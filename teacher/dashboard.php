@@ -142,38 +142,73 @@ if ($selected_student) {
           </tr>
         </thead>
         <tbody>
-          <?php foreach ($students as $st): ?>
-          <tr>
-            <td><?= $st['id'] ?></td>
-            <td><?= h($st['student_no']) ?></td>
-            <td><?= h($st['name']) ?></td>
-            <td><?= h($st['class']) ?></td>
-            <td>
-              <select name="period" class="form-select form-select-sm quarterInput">
-                <option value="1">Q1</option>
-                <option value="2">Q2</option>
-                <option value="3">Q3</option>
-                <option value="4">Q4</option>
-              </select>
-            </td>
-            <td>
-              <form method="post" action="/teacher/grade_save.php" class="gradeForm d-flex gap-2 align-items-center">
-              <input type="hidden" name="student_id" value="<?= $st['id'] ?>">
-              <input type="hidden" name="subject_id" class="subjectInput">
-              <input type="hidden" name="period" class="quarterHidden">
-              <input type="number" step="0.01" min="0" max="100" name="grade" class="form-control form-control-sm" required>
-              <button class="btn btn-primary btn-sm">Save</button>
-            </form>
-            </td>
-            <td>
-              <form method="post" action="/teacher/grade_delete.php" onsubmit="return confirm('Delete all grades for this student?');">
-                <input type="hidden" name="student_id" value="<?= $st['id'] ?>">
-                <button class="btn btn-danger btn-sm">Delete</button>
-              </form>
-            </td>
-          </tr>
-          <?php endforeach; ?>
-        </tbody>
+  <?php foreach ($students as $st): ?>
+    <?php
+      // Fetch grade for this student + teacher + subject + period (latest record)
+      $grade_stmt = $pdo->prepare("
+        SELECT g.id, g.grade, g.period
+        FROM grades g
+        WHERE g.student_id = ? AND g.teacher_id = ?
+        ORDER BY g.created_at DESC LIMIT 1
+      ");
+      $grade_stmt->execute([$st['id'], $user['id']]);
+      $existing = $grade_stmt->fetch(PDO::FETCH_ASSOC);
+      $existing_grade = $existing['grade'] ?? '';
+      $existing_period = $existing['period'] ?? '';
+      $grade_id = $existing['id'] ?? '';
+    ?>
+    <tr>
+      <td><?= $st['id'] ?></td>
+      <td><?= h($st['student_no']) ?></td>
+      <td><?= h($st['name']) ?></td>
+      <td><?= h($st['class']) ?></td>
+      <td>
+        <select name="period" class="form-select form-select-sm quarterInput">
+          <option value="1" <?= ($existing_period == '1') ? 'selected' : '' ?>>Q1</option>
+          <option value="2" <?= ($existing_period == '2') ? 'selected' : '' ?>>Q2</option>
+          <option value="3" <?= ($existing_period == '3') ? 'selected' : '' ?>>Q3</option>
+          <option value="4" <?= ($existing_period == '4') ? 'selected' : '' ?>>Q4</option>
+        </select>
+      </td>
+      <td>
+        <!-- Save form -->
+        <form method="post" action="/teacher/grade_save.php" class="gradeForm d-flex gap-2 align-items-center">
+          <input type="hidden" name="student_id" value="<?= $st['id'] ?>">
+          <input type="hidden" name="subject_id" class="subjectInput">
+          <input type="hidden" name="period" class="quarterHidden" value="<?= h($existing_period) ?>">
+          <input type="number" step="0.01" min="0" max="100" name="grade" 
+                 class="form-control form-control-sm" 
+                 value="<?= h($existing_grade) ?>" required>
+          <button class="btn btn-primary btn-sm">Save</button>
+        </form>
+
+        <!-- Edit form (hidden by default) -->
+        <?php if ($grade_id): ?>
+        <form method="post" action="/teacher/grade_edit.php" id="edit-form-<?= $grade_id ?>" class="d-none mt-2">
+          <input type="hidden" name="id" value="<?= $grade_id ?>">
+          <div class="input-group input-group-sm">
+            <input type="number" step="0.01" min="0" max="100" name="grade" class="form-control" 
+                   value="<?= h($existing_grade) ?>" required>
+            <button class="btn btn-success btn-sm">Update</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="toggleEdit(<?= $grade_id ?>)">Cancel</button>
+          </div>
+        </form>
+        <?php endif; ?>
+      </td>
+      <td>
+        <?php if ($grade_id): ?>
+          <button class="btn btn-warning btn-sm" onclick="toggleEdit(<?= $grade_id ?>)">Edit</button>
+        <?php endif; ?>
+
+        <form method="post" action="/teacher/grade_delete.php" onsubmit="return confirm('Delete all grades for this student?');" class="d-inline">
+          <input type="hidden" name="student_id" value="<?= $st['id'] ?>">
+          <button class="btn btn-danger btn-sm">Delete</button>
+        </form>
+      </td>
+    </tr>
+  <?php endforeach; ?>
+</tbody>
+
       </table>
     </div>
   </div>
@@ -213,6 +248,10 @@ $(document).ready(function() {
   });
 });
 
+function toggleEdit(id) {
+  const form = document.getElementById('edit-form-' + id);
+  if (form) form.classList.toggle('d-none');
+}
 </script>
 </body>
 </html>
