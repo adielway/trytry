@@ -194,7 +194,7 @@ $subjects = $pdo->query("SELECT id, name FROM subjects ORDER BY name ASC")->fetc
               <ul>
                 <?php foreach ($assigned as $a): ?>
                   <li>
-                    <?= htmlspecialchars($a['subject']) ?> — <?= htmlspecialchars($a['section']) ?>
+                    <?= htmlspecialchars($a['subject'] ?? '') ?> — <?= htmlspecialchars($a['section'] ?? '') ?>
                     <button type="button" class="btn btn-sm btn-outline-warning ms-2"
                       onclick="openSubjectEditModal('<?= $a['id'] ?>','<?= $a['subject'] ?>','<?= $a['section'] ?>')">
                       Edit
