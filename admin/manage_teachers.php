@@ -43,7 +43,6 @@ if (isset($_POST['action']) && $_POST['action'] === 'assign_subject') {
   $subject_id = $_POST['subject_id'];
   $section = trim($_POST['section'] ?? '');
 
-  // Prevent duplicate assignments
   $check = $pdo->prepare("SELECT 1 FROM assigned_subjects WHERE teacher_id = ? AND subject_id = ? AND COALESCE(section,'') = COALESCE(?, '')");
   $check->execute([$teacher_id, $subject_id, $section]);
   if (!$check->fetch()) {
@@ -68,12 +67,19 @@ if (isset($_POST['action']) && $_POST['action'] === 'edit_subject') {
   exit;
 }
 
+// --- ✅ DELETE ASSIGNED SUBJECT (fixed version) ---
+if (isset($_POST['action']) && $_POST['action'] === 'delete_subject') {
+  $assign_id = $_POST['assign_id'];
+  $stmt = $pdo->prepare("DELETE FROM assigned_subjects WHERE id = ?");
+  $stmt->execute([$assign_id]);
+
+  header("Location: manage_teachers.php");
+  exit;
+}
+
 // --- FETCH TEACHERS ---
 $teachers = $pdo->query("
-  SELECT 
-    u.id, 
-    u.name, 
-    u.email
+  SELECT u.id, u.name, u.email
   FROM users u
   WHERE u.role = 'teacher'
   ORDER BY u.id ASC
@@ -90,35 +96,11 @@ $subjects = $pdo->query("SELECT id, name FROM subjects ORDER BY name ASC")->fetc
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #0b1d39;
-      color: #fff;
-      min-height: 100vh;
-      display: flex;
-      overflow-x: hidden;
-    }
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background: url('../anhs.jpg') no-repeat center center fixed;
-      background-size: cover;
-      opacity: 0.25;
-      z-index: -1;
-    }
-    .sidebar {
-      width: 250px;
-      background: rgba(0, 51, 102, 0.95);
-      padding-top: 20px;
-      position: fixed;
-      height: 100vh;
-    }
+    body { font-family: 'Segoe UI', sans-serif; background: #0b1d39; color: #fff; min-height: 100vh; display: flex; overflow-x: hidden; }
+    body::before { content: ""; position: fixed; inset: 0; background: url('../anhs.jpg') no-repeat center center fixed; background-size: cover; opacity: 0.25; z-index: -1; }
+    .sidebar { width: 250px; background: rgba(0, 51, 102, 0.95); padding-top: 20px; position: fixed; height: 100vh; }
     .sidebar h3 { color: #fff; text-align: center; margin-bottom: 1rem; font-weight: 600; }
-    .sidebar a {
-      color: #dce3f3; text-decoration: none; padding: 12px 20px; display: block;
-      border-left: 3px solid transparent; transition: all 0.2s ease;
-    }
+    .sidebar a { color: #dce3f3; text-decoration: none; padding: 12px 20px; display: block; border-left: 3px solid transparent; transition: all 0.2s ease; }
     .sidebar a:hover, .sidebar a.active { background-color: rgba(255,255,255,0.1); border-left: 3px solid #4ea1ff; color: #fff; }
     .main { margin-left: 250px; padding: 30px; flex-grow: 1; }
     .table { color: #fff; background: rgba(255,255,255,0.12); border-radius: 8px; overflow: hidden; }
@@ -139,43 +121,29 @@ $subjects = $pdo->query("SELECT id, name FROM subjects ORDER BY name ASC")->fetc
     <a href="../logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a>
   </div>
 
-  <div class="main" id="main">
+  <div class="main">
     <h2 class="mb-4">Manage Teachers</h2>
 
-    <!-- Add Teacher Form -->
+    <!-- Add Teacher -->
     <form method="POST" class="row g-3 mb-4">
       <input type="hidden" name="action" value="add">
-      <div class="col-md-4">
-        <input type="text" name="name" class="form-control" placeholder="Teacher Name" required>
-      </div>
-      <div class="col-md-4">
-        <input type="email" name="email" class="form-control" placeholder="Email" required>
-      </div>
-      <div class="col-md-4">
-        <input type="password" name="password" class="form-control" placeholder="Password" required>
-      </div>
-      <div class="col-12 text-end">
-        <button class="btn btn-primary">Add Teacher</button>
-      </div>
+      <div class="col-md-4"><input type="text" name="name" class="form-control" placeholder="Teacher Name" required></div>
+      <div class="col-md-4"><input type="email" name="email" class="form-control" placeholder="Email" required></div>
+      <div class="col-md-4"><input type="password" name="password" class="form-control" placeholder="Password" required></div>
+      <div class="col-12 text-end"><button class="btn btn-primary">Add Teacher</button></div>
     </form>
 
     <!-- Teachers Table -->
     <table class="table table-bordered table-hover align-middle">
       <thead>
-        <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Assigned Subjects</th>
-          <th>Actions</th>
-        </tr>
+        <tr><th>ID</th><th>Name</th><th>Email</th><th>Assigned Subjects</th><th>Actions</th></tr>
       </thead>
       <tbody>
         <?php foreach ($teachers as $t): ?>
         <tr>
           <td><?= $t['id'] ?></td>
-          <td><?= htmlspecialchars($t['name']) ?></td>
-          <td><?= htmlspecialchars($t['email']) ?></td>
+          <td><?= htmlspecialchars($t['name'] ?? '') ?></td>
+          <td><?= htmlspecialchars($t['email'] ?? '') ?></td>
           <td>
             <?php
               $asg_stmt = $pdo->prepare("
@@ -195,8 +163,13 @@ $subjects = $pdo->query("SELECT id, name FROM subjects ORDER BY name ASC")->fetc
                 <?php foreach ($assigned as $a): ?>
                   <li>
                     <?= htmlspecialchars($a['subject'] ?? '') ?> — <?= htmlspecialchars($a['section'] ?? '') ?>
+                    <form method="POST" class="d-inline">
+                      <input type="hidden" name="action" value="delete_subject">
+                      <input type="hidden" name="assign_id" value="<?= $a['id'] ?>">
+                      <button class="btn btn-sm btn-outline-danger ms-2" onclick="return confirm('Remove this subject?')">Delete</button>
+                    </form>
                     <button type="button" class="btn btn-sm btn-outline-warning ms-2"
-                      onclick="openSubjectEditModal('<?= $a['id'] ?>','<?= $a['subject'] ?>','<?= $a['section'] ?>')">
+                      onclick="openSubjectEditModal('<?= $a['id'] ?>','<?= htmlspecialchars($a['subject'] ?? '') ?>','<?= htmlspecialchars($a['section'] ?? '') ?>')">
                       Edit
                     </button>
                   </li>
@@ -205,14 +178,13 @@ $subjects = $pdo->query("SELECT id, name FROM subjects ORDER BY name ASC")->fetc
             <?php endif; ?>
           </td>
           <td>
-            <!-- Assign Subject -->
             <form method="POST" class="d-flex mb-2">
               <input type="hidden" name="action" value="assign_subject">
               <input type="hidden" name="teacher_id" value="<?= $t['id'] ?>">
               <select name="subject_id" class="form-select form-select-sm me-2" required>
                 <option value="">Assign Subject</option>
                 <?php foreach ($subjects as $s): ?>
-                  <option value="<?= $s['id'] ?>"><?= htmlspecialchars($s['name']) ?></option>
+                  <option value="<?= $s['id'] ?>"><?= htmlspecialchars($s['name'] ?? '') ?></option>
                 <?php endforeach; ?>
               </select>
               <select name="section" class="form-select form-select-sm me-2" required>
@@ -225,13 +197,9 @@ $subjects = $pdo->query("SELECT id, name FROM subjects ORDER BY name ASC")->fetc
               <button class="btn btn-sm btn-primary">Assign</button>
             </form>
 
-            <!-- Edit Teacher -->
             <button type="button" class="btn btn-sm btn-warning"
-              onclick="openEditModal('<?= $t['id'] ?>','<?= htmlspecialchars($t['name']) ?>','<?= htmlspecialchars($t['email']) ?>')">
-              Edit
-            </button>
+              onclick="openEditModal('<?= $t['id'] ?>','<?= htmlspecialchars($t['name'] ?? '') ?>','<?= htmlspecialchars($t['email'] ?? '') ?>')">Edit</button>
 
-            <!-- Delete -->
             <form method="POST" class="d-inline">
               <input type="hidden" name="action" value="delete">
               <input type="hidden" name="id" value="<?= $t['id'] ?>">
@@ -244,49 +212,37 @@ $subjects = $pdo->query("SELECT id, name FROM subjects ORDER BY name ASC")->fetc
     </table>
   </div>
 
-  <!-- Edit Teacher Modal -->
+  <!-- Modals -->
   <div class="modal fade" id="editModal" tabindex="-1">
     <div class="modal-dialog">
       <div class="modal-content text-dark">
         <form method="POST">
           <input type="hidden" name="action" value="edit">
           <input type="hidden" id="editId" name="id">
-          <div class="modal-header">
-            <h5 class="modal-title">Edit Teacher</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
+          <div class="modal-header"><h5 class="modal-title">Edit Teacher</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
           <div class="modal-body">
-            <label>Name</label>
-            <input type="text" id="editName" name="name" class="form-control mb-3" required>
-            <label>Email</label>
-            <input type="email" id="editEmail" name="email" class="form-control" required>
+            <label>Name</label><input type="text" id="editName" name="name" class="form-control mb-3" required>
+            <label>Email</label><input type="email" id="editEmail" name="email" class="form-control" required>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button class="btn btn-primary">Save Changes</button>
-          </div>
+          <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary">Save</button></div>
         </form>
       </div>
     </div>
   </div>
 
-  <!-- Edit Assigned Subject Modal -->
   <div class="modal fade" id="editSubjectModal" tabindex="-1">
     <div class="modal-dialog">
       <div class="modal-content text-dark">
         <form method="POST">
           <input type="hidden" name="action" value="edit_subject">
           <input type="hidden" id="editAssignId" name="assign_id">
-          <div class="modal-header">
-            <h5 class="modal-title">Edit Assigned Subject</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
+          <div class="modal-header"><h5 class="modal-title">Edit Assigned Subject</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
           <div class="modal-body">
             <label>Subject</label>
             <select name="subject_id" id="editSubjectSelect" class="form-select mb-3" required>
               <option value="">Select Subject</option>
               <?php foreach ($subjects as $s): ?>
-                <option value="<?= $s['id'] ?>"><?= htmlspecialchars($s['name']) ?></option>
+                <option value="<?= $s['id'] ?>"><?= htmlspecialchars($s['name'] ?? '') ?></option>
               <?php endforeach; ?>
             </select>
             <label>Section</label>
@@ -298,10 +254,7 @@ $subjects = $pdo->query("SELECT id, name FROM subjects ORDER BY name ASC")->fetc
               <option value="Grade 10">Grade 10</option>
             </select>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button class="btn btn-primary">Save Changes</button>
-          </div>
+          <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary">Save</button></div>
         </form>
       </div>
     </div>
@@ -321,26 +274,14 @@ $subjects = $pdo->query("SELECT id, name FROM subjects ORDER BY name ASC")->fetc
 
     function openSubjectEditModal(assignId, subjectName, section) {
       document.getElementById('editAssignId').value = assignId;
-
       const subjectSelect = document.getElementById('editSubjectSelect');
       const sectionSelect = document.getElementById('editSection');
-
-      // Match subject name
       for (let i = 0; i < subjectSelect.options.length; i++) {
-        if (subjectSelect.options[i].text === subjectName) {
-          subjectSelect.selectedIndex = i;
-          break;
-        }
+        if (subjectSelect.options[i].text === subjectName) subjectSelect.selectedIndex = i;
       }
-
-      // Match section
       for (let i = 0; i < sectionSelect.options.length; i++) {
-        if (sectionSelect.options[i].value === section) {
-          sectionSelect.selectedIndex = i;
-          break;
-        }
+        if (sectionSelect.options[i].value === section) sectionSelect.selectedIndex = i;
       }
-
       editSubjectModal.show();
     }
   </script>
