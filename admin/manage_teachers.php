@@ -43,7 +43,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'assign_subject') {
   $subject_id = $_POST['subject_id'];
   $section = trim($_POST['section'] ?? '');
 
-  // Prevent duplicate assignments for same teacher + subject + section
+  // Prevent duplicate assignments
   $check = $pdo->prepare("SELECT 1 FROM assigned_subjects WHERE teacher_id = ? AND subject_id = ? AND COALESCE(section,'') = COALESCE(?, '')");
   $check->execute([$teacher_id, $subject_id, $section]);
   if (!$check->fetch()) {
@@ -55,18 +55,27 @@ if (isset($_POST['action']) && $_POST['action'] === 'assign_subject') {
   exit;
 }
 
+// --- EDIT ASSIGNED SUBJECT ---
+if (isset($_POST['action']) && $_POST['action'] === 'edit_subject') {
+  $assign_id = $_POST['assign_id'];
+  $subject_id = $_POST['subject_id'];
+  $section = trim($_POST['section'] ?? '');
+
+  $stmt = $pdo->prepare("UPDATE assigned_subjects SET subject_id = ?, section = ? WHERE id = ?");
+  $stmt->execute([$subject_id, $section, $assign_id]);
+
+  header("Location: manage_teachers.php");
+  exit;
+}
+
 // --- FETCH TEACHERS ---
 $teachers = $pdo->query("
   SELECT 
     u.id, 
     u.name, 
-    u.email, 
-    COALESCE(STRING_AGG(s.name, ', '), '—') AS subjects
+    u.email
   FROM users u
-  LEFT JOIN assigned_subjects asg ON u.id = asg.teacher_id
-  LEFT JOIN subjects s ON asg.subject_id = s.id
   WHERE u.role = 'teacher'
-  GROUP BY u.id, u.name, u.email
   ORDER BY u.id ASC
 ")->fetchAll(PDO::FETCH_ASSOC);
 
@@ -104,54 +113,18 @@ $subjects = $pdo->query("SELECT id, name FROM subjects ORDER BY name ASC")->fetc
       padding-top: 20px;
       position: fixed;
       height: 100vh;
-      transition: transform 0.3s ease;
-      z-index: 1000;
     }
-    .sidebar.collapsed { transform: translateX(-100%); }
-    .sidebar h3 {
-      color: #fff;
-      text-align: center;
-      margin-bottom: 1rem;
-      font-weight: 600;
-    }
+    .sidebar h3 { color: #fff; text-align: center; margin-bottom: 1rem; font-weight: 600; }
     .sidebar a {
-      color: #dce3f3;
-      text-decoration: none;
-      padding: 12px 20px;
-      display: block;
-      border-left: 3px solid transparent;
-      transition: all 0.2s ease;
+      color: #dce3f3; text-decoration: none; padding: 12px 20px; display: block;
+      border-left: 3px solid transparent; transition: all 0.2s ease;
     }
-    .sidebar a:hover, .sidebar a.active {
-      background-color: rgba(255, 255, 255, 0.1);
-      border-left: 3px solid #4ea1ff;
-      color: #fff;
-    }
-    .main {
-      margin-left: 250px;
-      padding: 30px;
-      flex-grow: 1;
-      transition: margin-left 0.3s ease;
-    }
-    .main.full { margin-left: 0 !important; }
-    .table {
-      color: #fff;
-      background: rgba(255, 255, 255, 0.12);
-      border-radius: 8px;
-      overflow: hidden;
-    }
-    .table thead { background: rgba(255, 255, 255, 0.15); }
+    .sidebar a:hover, .sidebar a.active { background-color: rgba(255,255,255,0.1); border-left: 3px solid #4ea1ff; color: #fff; }
+    .main { margin-left: 250px; padding: 30px; flex-grow: 1; }
+    .table { color: #fff; background: rgba(255,255,255,0.12); border-radius: 8px; overflow: hidden; }
+    .table thead { background: rgba(255,255,255,0.15); }
     .btn-primary { background-color: #1e90ff; border: none; }
     .btn-primary:hover { background-color: #0f78d1; }
-    .toggle-btn {
-      position: fixed; top: 15px; left: 15px; z-index: 1100;
-      cursor: pointer; transition: transform 0.2s ease;
-    }
-    .toggle-btn img {
-      width: 45px; height: 45px; border-radius: 50%;
-      border: 2px solid #fff; object-fit: cover;
-    }
-    .toggle-btn:hover { transform: scale(1.1); }
   </style>
 </head>
 <body>
@@ -164,10 +137,6 @@ $subjects = $pdo->query("SELECT id, name FROM subjects ORDER BY name ASC")->fetc
     <a href="manage_students.php"><i class="bi bi-mortarboard"></i> Manage Students</a>
     <a href="manage_subjects.php"><i class="bi bi-book"></i> Manage Subjects</a>
     <a href="../logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a>
-  </div>
-
-  <div class="toggle-btn" onclick="toggleSidebar()">
-    <img src="../logo.png" alt="Toggle Sidebar">
   </div>
 
   <div class="main" id="main">
@@ -207,33 +176,56 @@ $subjects = $pdo->query("SELECT id, name FROM subjects ORDER BY name ASC")->fetc
           <td><?= $t['id'] ?></td>
           <td><?= htmlspecialchars($t['name']) ?></td>
           <td><?= htmlspecialchars($t['email']) ?></td>
-          <td><?= htmlspecialchars($t['subjects']) ?></td>
+          <td>
+            <?php
+              $asg_stmt = $pdo->prepare("
+                SELECT a.id, s.name AS subject, a.section
+                FROM assigned_subjects a
+                JOIN subjects s ON a.subject_id = s.id
+                WHERE a.teacher_id = ?
+                ORDER BY s.name
+              ");
+              $asg_stmt->execute([$t['id']]);
+              $assigned = $asg_stmt->fetchAll(PDO::FETCH_ASSOC);
+            ?>
+            <?php if (empty($assigned)): ?>
+              <em>No subjects assigned</em>
+            <?php else: ?>
+              <ul>
+                <?php foreach ($assigned as $a): ?>
+                  <li>
+                    <?= htmlspecialchars($a['subject']) ?> — <?= htmlspecialchars($a['section']) ?>
+                    <button type="button" class="btn btn-sm btn-outline-warning ms-2"
+                      onclick="openSubjectEditModal('<?= $a['id'] ?>','<?= $a['subject'] ?>','<?= $a['section'] ?>')">
+                      Edit
+                    </button>
+                  </li>
+                <?php endforeach; ?>
+              </ul>
+            <?php endif; ?>
+          </td>
           <td>
             <!-- Assign Subject -->
             <form method="POST" class="d-flex mb-2">
-                <input type="hidden" name="action" value="assign_subject">
-                <input type="hidden" name="teacher_id" value="<?= $t['id'] ?>">
-                <select name="subject_id" class="form-select form-select-sm me-2" required>
-                  <option value="">Assign Subject</option>
-                  <?php foreach ($subjects as $s): ?>
-                    <option value="<?= $s['id'] ?>"><?= htmlspecialchars($s['name']) ?></option>
-                  <?php endforeach; ?>
-                </select>
+              <input type="hidden" name="action" value="assign_subject">
+              <input type="hidden" name="teacher_id" value="<?= $t['id'] ?>">
+              <select name="subject_id" class="form-select form-select-sm me-2" required>
+                <option value="">Assign Subject</option>
+                <?php foreach ($subjects as $s): ?>
+                  <option value="<?= $s['id'] ?>"><?= htmlspecialchars($s['name']) ?></option>
+                <?php endforeach; ?>
+              </select>
+              <select name="section" class="form-select form-select-sm me-2" required>
+                <option value="">Select Section</option>
+                <option value="Grade 7">Grade 7</option>
+                <option value="Grade 8">Grade 8</option>
+                <option value="Grade 9">Grade 9</option>
+                <option value="Grade 10">Grade 10</option>
+              </select>
+              <button class="btn btn-sm btn-primary">Assign</button>
+            </form>
 
-                <!-- NEW: pick section -->
-                <select name="section" class="form-select form-select-sm me-2" required>
-                  <option value="">Select Section</option>
-                  <option value="Grade 7">Grade 7</option>
-                  <option value="Grade 8">Grade 8</option>
-                  <option value="Grade 9">Grade 9</option>
-                  <option value="Grade 10">Grade 10</option>
-                  <!-- You can generate options dynamically later -->
-                </select>
-
-                <button class="btn btn-sm btn-primary">Assign</button>
-              </form>
-
-            <!-- Edit -->
+            <!-- Edit Teacher -->
             <button type="button" class="btn btn-sm btn-warning"
               onclick="openEditModal('<?= $t['id'] ?>','<?= htmlspecialchars($t['name']) ?>','<?= htmlspecialchars($t['email']) ?>')">
               Edit
@@ -252,7 +244,7 @@ $subjects = $pdo->query("SELECT id, name FROM subjects ORDER BY name ASC")->fetc
     </table>
   </div>
 
-  <!-- Edit Modal -->
+  <!-- Edit Teacher Modal -->
   <div class="modal fade" id="editModal" tabindex="-1">
     <div class="modal-dialog">
       <div class="modal-content text-dark">
@@ -278,21 +270,78 @@ $subjects = $pdo->query("SELECT id, name FROM subjects ORDER BY name ASC")->fetc
     </div>
   </div>
 
+  <!-- Edit Assigned Subject Modal -->
+  <div class="modal fade" id="editSubjectModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content text-dark">
+        <form method="POST">
+          <input type="hidden" name="action" value="edit_subject">
+          <input type="hidden" id="editAssignId" name="assign_id">
+          <div class="modal-header">
+            <h5 class="modal-title">Edit Assigned Subject</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <label>Subject</label>
+            <select name="subject_id" id="editSubjectSelect" class="form-select mb-3" required>
+              <option value="">Select Subject</option>
+              <?php foreach ($subjects as $s): ?>
+                <option value="<?= $s['id'] ?>"><?= htmlspecialchars($s['name']) ?></option>
+              <?php endforeach; ?>
+            </select>
+            <label>Section</label>
+            <select name="section" id="editSection" class="form-select" required>
+              <option value="">Select Section</option>
+              <option value="Grade 7">Grade 7</option>
+              <option value="Grade 8">Grade 8</option>
+              <option value="Grade 9">Grade 9</option>
+              <option value="Grade 10">Grade 10</option>
+            </select>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button class="btn btn-primary">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    function toggleSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      const main = document.getElementById('main');
-      sidebar.classList.toggle('collapsed');
-      main.classList.toggle('full');
-    }
-
     const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+    const editSubjectModal = new bootstrap.Modal(document.getElementById('editSubjectModal'));
+
     function openEditModal(id, name, email) {
       document.getElementById('editId').value = id;
       document.getElementById('editName').value = name;
       document.getElementById('editEmail').value = email;
       editModal.show();
+    }
+
+    function openSubjectEditModal(assignId, subjectName, section) {
+      document.getElementById('editAssignId').value = assignId;
+
+      const subjectSelect = document.getElementById('editSubjectSelect');
+      const sectionSelect = document.getElementById('editSection');
+
+      // Match subject name
+      for (let i = 0; i < subjectSelect.options.length; i++) {
+        if (subjectSelect.options[i].text === subjectName) {
+          subjectSelect.selectedIndex = i;
+          break;
+        }
+      }
+
+      // Match section
+      for (let i = 0; i < sectionSelect.options.length; i++) {
+        if (sectionSelect.options[i].value === section) {
+          sectionSelect.selectedIndex = i;
+          break;
+        }
+      }
+
+      editSubjectModal.show();
     }
   </script>
 </body>
