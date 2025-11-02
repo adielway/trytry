@@ -6,21 +6,49 @@ $user = $_SESSION['user'];
 
 // Fetch assigned subjects for this teacher
 $stmt = $pdo->prepare("
-  SELECT s.id, s.name 
+  SELECT s.id AS subject_id, s.name AS subject_name, a.section
   FROM assigned_subjects a
   JOIN subjects s ON a.subject_id = s.id
   WHERE a.teacher_id = ?
   ORDER BY s.name
 ");
 $stmt->execute([$user['id']]);
-$subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$assigned_rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch all students (teachers are not advisers)
-$students = $pdo->query("
-  SELECT id, student_no, name, class 
-  FROM students 
-  ORDER BY name ASC
-")->fetchAll(PDO::FETCH_ASSOC);
+// build $subjects list for the select UI (include section in label)
+$subjects = [];
+foreach ($assigned_rows as $ar) {
+    $subjects[] = [
+      'id' => $ar['subject_id'],
+      'name' => $ar['subject_name'],
+      'section' => $ar['section']
+    ];
+}
+
+// collect distinct sections that teacher has (non-empty)
+$sections = [];
+foreach ($assigned_rows as $ar) {
+    if (!empty($ar['section'])) $sections[$ar['section']] = true;
+}
+$sections = array_keys($sections);
+
+// Fetch students that belong to those sections only.
+// We assume students.class like "Grade 10 - A" — we match by prefix "Grade 10%"
+if (!empty($sections)) {
+    $conds = [];
+    $params = [];
+    foreach ($sections as $sec) {
+        $conds[] = "s.class ILIKE ?";
+        $params[] = $sec . '%';
+    }
+    $sql = "SELECT id, student_no, name, class FROM students s WHERE (" . implode(' OR ', $conds) . ") ORDER BY name ASC";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} else {
+    // fallback: no section assigned — empty list so teacher doesn't see all students
+    $students = [];
+}
 
 // Fetch grades for a selected student (if applicable)
 $selected_student = isset($_GET['student']) ? (int)$_GET['student'] : null;
@@ -121,11 +149,14 @@ if ($selected_student) {
     <div class="mb-3">
       <label class="form-label">Select Subject</label>
       <select id="subjectSelect" class="form-select w-50" required>
-        <option value="">-- Select Subject --</option>
-        <?php foreach ($subjects as $s): ?>
-          <option value="<?= $s['id'] ?>"><?= h($s['name']) ?></option>
-        <?php endforeach; ?>
-      </select>
+      <option value="">-- Select Subject --</option>
+      <?php foreach ($subjects as $s): ?>
+        <option value="<?= $s['id'] ?>">
+          <?= h($s['name']) ?><?= !empty($s['section']) ? " — ".h($s['section']) : "" ?>
+        </option>
+      <?php endforeach; ?>
+    </select>
+
     </div>
 
     <div class="table-responsive">
@@ -144,18 +175,27 @@ if ($selected_student) {
         <tbody>
   <?php foreach ($students as $st): ?>
     <?php
-      // Fetch grade for this student + teacher + subject + period (latest record)
+            // Fetch grade for this student + teacher + subject + period (latest record)
+            // (inside the foreach $students loop) -- determine existing grade for the row
+      $existing_grade = '';
+      $existing_period = '';
+      $grade_id = '';
+      // If selected subject was set via JS to the hidden field, we still can't read it server-side here.
+      // So we will query latest grade for any subject by this teacher for this student (existing behavior).
       $grade_stmt = $pdo->prepare("
-        SELECT g.id, g.grade, g.period
+        SELECT g.id, g.grade, g.period, g.subject_id
         FROM grades g
         WHERE g.student_id = ? AND g.teacher_id = ?
-        ORDER BY g.created_at DESC LIMIT 1
+        ORDER BY g.created_at DESC
+        LIMIT 1
       ");
       $grade_stmt->execute([$st['id'], $user['id']]);
       $existing = $grade_stmt->fetch(PDO::FETCH_ASSOC);
-      $existing_grade = $existing['grade'] ?? '';
-      $existing_period = $existing['period'] ?? '';
-      $grade_id = $existing['id'] ?? '';
+      if ($existing) {
+        $existing_grade = $existing['grade'];
+        $existing_period = $existing['period'];
+        $grade_id = $existing['id'];
+      }
     ?>
     <tr>
       <td><?= $st['id'] ?></td>

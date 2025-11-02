@@ -41,13 +41,14 @@ if (isset($_POST['action']) && $_POST['action'] === 'delete') {
 if (isset($_POST['action']) && $_POST['action'] === 'assign_subject') {
   $teacher_id = $_POST['teacher_id'];
   $subject_id = $_POST['subject_id'];
+  $section = trim($_POST['section'] ?? '');
 
-  // Prevent duplicate assignments
-  $check = $pdo->prepare("SELECT 1 FROM assigned_subjects WHERE teacher_id = ? AND subject_id = ?");
-  $check->execute([$teacher_id, $subject_id]);
+  // Prevent duplicate assignments for same teacher + subject + section
+  $check = $pdo->prepare("SELECT 1 FROM assigned_subjects WHERE teacher_id = ? AND subject_id = ? AND COALESCE(section,'') = COALESCE(?, '')");
+  $check->execute([$teacher_id, $subject_id, $section]);
   if (!$check->fetch()) {
-    $stmt = $pdo->prepare("INSERT INTO assigned_subjects (teacher_id, subject_id) VALUES (?, ?)");
-    $stmt->execute([$teacher_id, $subject_id]);
+    $stmt = $pdo->prepare("INSERT INTO assigned_subjects (teacher_id, subject_id, section) VALUES (?, ?, ?)");
+    $stmt->execute([$teacher_id, $subject_id, $section]);
   }
 
   header("Location: manage_teachers.php");
@@ -210,16 +211,27 @@ $subjects = $pdo->query("SELECT id, name FROM subjects ORDER BY name ASC")->fetc
           <td>
             <!-- Assign Subject -->
             <form method="POST" class="d-flex mb-2">
-              <input type="hidden" name="action" value="assign_subject">
-              <input type="hidden" name="teacher_id" value="<?= $t['id'] ?>">
-              <select name="subject_id" class="form-select form-select-sm me-2" required>
-                <option value="">Assign Subject</option>
-                <?php foreach ($subjects as $s): ?>
-                  <option value="<?= $s['id'] ?>"><?= htmlspecialchars($s['name']) ?></option>
-                <?php endforeach; ?>
-              </select>
-              <button class="btn btn-sm btn-primary">Assign</button>
-            </form>
+                <input type="hidden" name="action" value="assign_subject">
+                <input type="hidden" name="teacher_id" value="<?= $t['id'] ?>">
+                <select name="subject_id" class="form-select form-select-sm me-2" required>
+                  <option value="">Assign Subject</option>
+                  <?php foreach ($subjects as $s): ?>
+                    <option value="<?= $s['id'] ?>"><?= htmlspecialchars($s['name']) ?></option>
+                  <?php endforeach; ?>
+                </select>
+
+                <!-- NEW: pick section -->
+                <select name="section" class="form-select form-select-sm me-2" required>
+                  <option value="">Select Section</option>
+                  <option value="Grade 7">Grade 7</option>
+                  <option value="Grade 8">Grade 8</option>
+                  <option value="Grade 9">Grade 9</option>
+                  <option value="Grade 10">Grade 10</option>
+                  <!-- You can generate options dynamically later -->
+                </select>
+
+                <button class="btn btn-sm btn-primary">Assign</button>
+              </form>
 
             <!-- Edit -->
             <button type="button" class="btn btn-sm btn-warning"
