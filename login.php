@@ -138,12 +138,11 @@ body::before {
               </div>
             </form>
 
-            <p class="mt-3 small text-muted text-center">
-              © BSCS STUDENTS
-
               <div class="alert alert-warning mt-3 text-center">
   ⚠️ Please note: For your privacy, do not screenshot, record, or share your grades.
-</div>
+</div>      
+             <p class="mt-3 small text-muted text-center">
+              © BSCS STUDENTS
 
             </p>
           </div>
