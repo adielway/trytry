@@ -159,19 +159,29 @@ $subjects = $pdo->query("SELECT id, name FROM subjects ORDER BY name ASC")->fetc
             <?php if (empty($assigned)): ?>
               <em>No subjects assigned</em>
             <?php else: ?>
-              <ul>
+              <ul class="list-unstyled mb-0">
                 <?php foreach ($assigned as $a): ?>
-                  <li>
-                    <?= htmlspecialchars($a['subject'] ?? '') ?> — <?= htmlspecialchars($a['section'] ?? '') ?>
-                    <form method="POST" class="d-inline">
-                      <input type="hidden" name="action" value="delete_subject">
-                      <input type="hidden" name="assign_id" value="<?= $a['id'] ?>">
-                      <button class="btn btn-sm btn-outline-danger ms-2" onclick="return confirm('Remove this subject?')">Delete</button>
-                    </form>
-                    <button type="button" class="btn btn-sm btn-outline-warning ms-2"
-                      onclick="openSubjectEditModal('<?= $a['id'] ?>','<?= htmlspecialchars($a['subject'] ?? '') ?>','<?= htmlspecialchars($a['section'] ?? '') ?>')">
-                      Edit
-                    </button>
+                  <li class="mb-2 d-flex align-items-center justify-content-between bg-light bg-opacity-10 p-2 rounded">
+                    <div>
+                      <strong><?= htmlspecialchars($a['subject'] ?? '') ?></strong> 
+                      <span class="text-info">— <?= htmlspecialchars($a['section'] ?? '') ?></span>
+                    </div>
+                    <div class="d-flex gap-1">
+                      <button type="button" class="btn btn-sm btn-outline-warning rounded-circle" 
+                        title="Edit"
+                        onclick="openSubjectEditModal('<?= $a['id'] ?>','<?= htmlspecialchars($a['subject'] ?? '') ?>','<?= htmlspecialchars($a['section'] ?? '') ?>')">
+                        <i class="bi bi-pencil"></i>
+                      </button>
+
+                      <form method="POST" class="d-inline">
+                        <input type="hidden" name="action" value="delete_subject">
+                        <input type="hidden" name="assign_id" value="<?= $a['id'] ?>">
+                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle" 
+                          title="Delete" onclick="return confirm('Remove this subject?')">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </form>
+                    </div>
                   </li>
                 <?php endforeach; ?>
               </ul>
