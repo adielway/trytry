@@ -111,6 +111,48 @@ if ($user['role'] === 'student') {
           echo "</tbody></table></div>";
         }
         ?>
+    <hr class="my-4">
+
+<h5 class="mt-3">Behavioral Remarks</h5>
+
+<div class="table-responsive">
+  <table class="table table-bordered text-center align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>Core Values</th>
+        <th>Behavior Indicators</th>
+        <th>Remarks</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Makadiyos</strong></td>
+        <td>Shows honesty, respect, and faith</td>
+        <td><span class="text-success">Always Observed</span></td>
+      </tr>
+      <tr>
+        <td><strong>Makatao</strong></td>
+        <td>Shows respect and care for others</td>
+        <td><span class="text-success">Always Observed</span></td>
+      </tr>
+      <tr>
+        <td><strong>Makakalikasan</strong></td>
+        <td>Cares for the environment</td>
+        <td><span class="text-warning">Sometimes Observed</span></td>
+      </tr>
+      <tr>
+        <td><strong>Makabansa</strong></td>
+        <td>Shows love for country and school</td>
+        <td><span class="text-success">Always Observed</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p class="text-muted small">
+  Note: Behavioral remarks are based on observed conduct and values formation.
+</p>
+
       <?php endif; ?>
     </div>
   </div>
