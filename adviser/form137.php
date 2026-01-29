@@ -2,114 +2,97 @@
 require_once '../config.php';
 require_role(['adviser']);
 
-// Fetch adviser info
 $user_id = $_SESSION['user']['id'];
+
+/* =======================
+   FETCH ADVISER INFO
+======================= */
 $adviser_stmt = $pdo->prepare("SELECT * FROM advisers WHERE user_id = ?");
 $adviser_stmt->execute([$user_id]);
-$adviser_data = $adviser_stmt->fetch(PDO::FETCH_ASSOC);
+$adviser = $adviser_stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$adviser_data) {
-    echo "<h3>You are not assigned as an adviser to any section yet.</h3>";
+if (!$adviser) {
+    echo "<h3>You are not assigned as an adviser.</h3>";
     exit;
 }
 
-// Get student ID
+/* =======================
+   FETCH STUDENTS UNDER ADVISER
+======================= */
+$students_stmt = $pdo->prepare("
+    SELECT s.id, s.name
+    FROM students s
+    WHERE s.adviser_id = ?
+    ORDER BY s.name
+");
+$students_stmt->execute([$adviser['id']]);
+$students = $students_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+/* =======================
+   GET STUDENT ID
+======================= */
 $student_id = $_GET['id'] ?? null;
 
-/* ===============================
-   IF NO STUDENT SELECTED → SHOW LIST
-   =============================== */
 if (!$student_id) {
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Select Student - Form 137</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
 
-    // Fetch students under adviser section
-    $students_stmt = $pdo->prepare("
-        SELECT s.id, s.name, s.student_no
-        FROM students s
-        WHERE s.section = ?
-        ORDER BY s.name ASC
-    ");
-    $students_stmt->execute([$adviser_data['section']]);
-    $students = $students_stmt->fetchAll(PDO::FETCH_ASSOC);
-    ?>
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Select Student - Form 137</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    </head>
-    <body class="bg-light">
-
-    <div class="container mt-5">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Select Student for Form 137</h5>
-            </div>
-            <div class="card-body">
-
-                <?php if (count($students) > 0): ?>
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Student No</th>
-                                <th>Name</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($students as $s): ?>
-                                <tr>
-                                    <td><?= htmlspecialchars($s['student_no']) ?></td>
-                                    <td><?= htmlspecialchars($s['name']) ?></td>
-                                    <td>
-                                        <a href="form137.php?id=<?= $s['id'] ?>" class="btn btn-sm btn-success">
-                                            View Form 137
-                                        </a>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                <?php else: ?>
-                    <p class="text-center">No students found in your section.</p>
-                <?php endif; ?>
-
-            </div>
-        </div>
+<div class="container mt-5">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h4>Select Student (Form 137)</h4>
+      <form method="get">
+        <select name="id" class="form-select mb-3" required>
+          <option value="">-- Select Student --</option>
+          <?php foreach ($students as $s): ?>
+            <option value="<?= $s['id'] ?>"><?= htmlspecialchars($s['name']) ?></option>
+          <?php endforeach; ?>
+        </select>
+        <button class="btn btn-primary">View Form 137</button>
+      </form>
     </div>
+  </div>
+</div>
 
-    </body>
-    </html>
-    <?php
-    exit;
+</body>
+</html>
+<?php
+exit;
 }
 
-/* ===============================
-   EXISTING LOGIC BELOW (UNCHANGED)
-   =============================== */
-
-// Fetch student info
+/* =======================
+   FETCH STUDENT INFO
+======================= */
 $student_stmt = $pdo->prepare("
     SELECT s.*, u.email
     FROM students s
     JOIN users u ON s.user_id = u.id
-    WHERE s.id = ?
+    WHERE s.id = ? AND s.adviser_id = ?
 ");
-$student_stmt->execute([$student_id]);
+$student_stmt->execute([$student_id, $adviser['id']]);
 $student = $student_stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$student) {
-    echo "<h3>Student not found.</h3>";
+    echo "<h3>Student not found or not under your advisory.</h3>";
     exit;
 }
 
-// Fetch grades
+/* =======================
+   FETCH GRADES
+======================= */
 $grades_stmt = $pdo->prepare("
     SELECT sub.name AS subject, g.period, g.grade
     FROM grades g
     JOIN subjects sub ON g.subject_id = sub.id
     WHERE g.student_id = ?
-    ORDER BY sub.name ASC, g.period ASC
+    ORDER BY sub.name, g.period
 ");
 $grades_stmt->execute([$student_id]);
 $grades = $grades_stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -120,169 +103,103 @@ $grades = $grades_stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
 <meta charset="UTF-8">
 <title>Form 137 - <?= htmlspecialchars($student['name']) ?></title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
 body {
-    font-family: "Times New Roman", serif;
-    background: #fff;
-    margin: 0;
-    padding: 20px;
+  font-family: "Times New Roman", serif;
+  background: #f2f2f2;
 }
 
-.form-container {
-    width: 100%;
-    max-width: 900px;
-    margin: auto;
-    border: 1px solid #000;
-    padding: 20px;
+.form137 {
+  background: #fff;
+  max-width: 900px;
+  margin: 30px auto;
+  padding: 40px;
+  border: 1px solid #000;
 }
 
-.header {
-    text-align: center;
-    margin-bottom: 10px;
+h3, h5 {
+  text-align: center;
+  margin: 0;
 }
 
-.header h4, .header h5 {
-    margin: 0;
-    font-weight: bold;
-}
-
-.header p {
-    margin: 2px 0;
-    font-size: 13px;
-}
-
-.section-title {
-    text-align: center;
-    font-weight: bold;
-    margin: 15px 0 8px;
-    text-transform: uppercase;
+.info p {
+  margin: 2px 0;
+  font-size: 14px;
 }
 
 table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-}
-
-table, th, td {
-    border: 1px solid #000;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  font-size: 14px;
 }
 
 th, td {
-    padding: 5px;
-    text-align: center;
-}
-
-.info-table td {
-    text-align: left;
-    padding: 6px;
+  border: 1px solid #000;
+  padding: 5px;
+  text-align: center;
 }
 
 .print-btn {
-    text-align: center;
-    margin-top: 20px;
+  text-align: center;
+  margin-top: 25px;
 }
 
 @media print {
-    .print-btn {
-        display: none;
-    }
+  .print-btn { display: none; }
+  body { background: none; }
 }
 </style>
 </head>
 
 <body>
 
-<div class="form-container">
+<div class="form137">
+  <h3>REPUBLIC OF THE PHILIPPINES</h3>
+  <h5>DEPARTMENT OF EDUCATION</h5>
+  <h5>STUDENT PERMANENT RECORD (Form 137)</h5>
+  <hr>
 
-    <!-- HEADER -->
-    <div class="header">
-        <h4>DEPARTMENT OF EDUCATION</h4>
-        <p>Region VII – Central Visayas</p>
-        <p>Division of Negros Oriental</p>
-        <h5>AMLAN NATIONAL HIGH SCHOOL</h5>
-        <p>Amlan, Negros Oriental</p>
-        <br>
-        <strong>STUDENT PERMANENT RECORD (FORM 137)</strong>
-    </div>
+  <div class="info">
+    <p><strong>School:</strong> AMLAN NATIONAL HIGH SCHOOL</p>
+    <p><strong>Student Name:</strong> <?= htmlspecialchars($student['name']) ?></p>
+    <p><strong>Student No:</strong> <?= htmlspecialchars($student['student_no']) ?></p>
+    <p><strong>Class:</strong> <?= htmlspecialchars($student['class']) ?></p>
+    <p><strong>Email:</strong> <?= htmlspecialchars($student['email']) ?></p>
+    <p><strong>Section:</strong> <?= htmlspecialchars($adviser['section']) ?></p>
+    <p><strong>Adviser:</strong> <?= htmlspecialchars($_SESSION['user']['name']) ?></p>
+  </div>
 
-    <!-- STUDENT INFO -->
-    <div class="section-title">Student Information</div>
-    <table class="info-table">
-        <tr>
-            <td width="25%"><strong>Student Name</strong></td>
-            <td width="75%"><?= htmlspecialchars($student['name']) ?></td>
-        </tr>
-        <tr>
-            <td><strong>Student Number</strong></td>
-            <td><?= htmlspecialchars($student['student_no']) ?></td>
-        </tr>
-        <tr>
-            <td><strong>Class</strong></td>
-            <td><?= htmlspecialchars($student['class']) ?></td>
-        </tr>
-        <tr>
-            <td><strong>Email</strong></td>
-            <td><?= htmlspecialchars($student['email']) ?></td>
-        </tr>
-        <tr>
-            <td><strong>Adviser</strong></td>
-            <td><?= htmlspecialchars($_SESSION['user']['name']) ?></td>
-        </tr>
-        <tr>
-            <td><strong>Section</strong></td>
-            <td><?= htmlspecialchars($adviser_data['section']) ?></td>
-        </tr>
-    </table>
+  <h5 class="mt-4">ACADEMIC RECORDS</h5>
 
-    <!-- ACADEMIC RECORDS -->
-    <div class="section-title">Academic Records</div>
-    <table>
-        <thead>
-            <tr>
-                <th width="50%">Subject</th>
-                <th width="25%">Period</th>
-                <th width="25%">Final Grade</th>
-            </tr>
-        </thead>
-        <tbody>
-        <?php if (count($grades) > 0): ?>
-            <?php foreach ($grades as $g): ?>
-                <tr>
-                    <td><?= htmlspecialchars($g['subject']) ?></td>
-                    <td><?= htmlspecialchars($g['period']) ?></td>
-                    <td><?= htmlspecialchars($g['grade']) ?></td>
-                </tr>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <tr>
-                <td colspan="3">No grades recorded.</td>
-            </tr>
-        <?php endif; ?>
-        </tbody>
-    </table>
-
-    <!-- FOOTER -->
-    <br><br>
-    <table class="info-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Subject</th>
+        <th>Quarter</th>
+        <th>Final Grade</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php if ($grades): ?>
+        <?php foreach ($grades as $g): ?>
         <tr>
-            <td width="50%">
-                <strong>Certified Correct:</strong><br><br>
-                _______________________________<br>
-                <em>Class Adviser</em>
-            </td>
-            <td width="50%">
-                <strong>Date:</strong><br><br>
-                _______________________________
-            </td>
+          <td><?= htmlspecialchars($g['subject']) ?></td>
+          <td><?= htmlspecialchars($g['period']) ?></td>
+          <td><?= htmlspecialchars($g['grade']) ?></td>
         </tr>
-    </table>
+        <?php endforeach; ?>
+      <?php else: ?>
+        <tr><td colspan="3">No grades recorded.</td></tr>
+      <?php endif; ?>
+    </tbody>
+  </table>
 
-    <div class="print-btn">
-        <button onclick="window.print()">🖨️ Print Form 137</button>
-    </div>
-
+  <div class="print-btn">
+    <button onclick="window.print()" class="btn btn-dark">🖨 Print Form 137</button>
+  </div>
 </div>
 
 </body>
