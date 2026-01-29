@@ -89,7 +89,6 @@ $selected_level = isset($_GET['level']) && in_array((int)$_GET['level'], $allowe
 
         <!-- ✅ Grade level dropdown (ADDITION ONLY) -->
         <form method="GET" class="mb-3">
-          <label class="form-label fw-semibold">School Year / Grade Level</label>
           <select name="level" class="form-select w-auto" onchange="this.form.submit()">
             <?php foreach ([7,8,9,10] as $lvl): ?>
               <option value="<?= $lvl ?>" <?= $selected_level == $lvl ? 'selected' : '' ?>>
