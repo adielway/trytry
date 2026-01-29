@@ -2,13 +2,6 @@
 require_once '../config.php';
 require_role(['adviser']);
 
-// Get student ID
-$student_id = $_GET['id'] ?? null;
-if (!$student_id) {
-    echo "<h3>No student selected.</h3>";
-    exit;
-}
-
 // Fetch adviser info
 $user_id = $_SESSION['user']['id'];
 $adviser_stmt = $pdo->prepare("SELECT * FROM advisers WHERE user_id = ?");
@@ -19,6 +12,81 @@ if (!$adviser_data) {
     echo "<h3>You are not assigned as an adviser to any section yet.</h3>";
     exit;
 }
+
+// Get student ID
+$student_id = $_GET['id'] ?? null;
+
+/* ===============================
+   IF NO STUDENT SELECTED → SHOW LIST
+   =============================== */
+if (!$student_id) {
+
+    // Fetch students under adviser section
+    $students_stmt = $pdo->prepare("
+        SELECT s.id, s.name, s.student_no
+        FROM students s
+        WHERE s.section = ?
+        ORDER BY s.name ASC
+    ");
+    $students_stmt->execute([$adviser_data['section']]);
+    $students = $students_stmt->fetchAll(PDO::FETCH_ASSOC);
+    ?>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Select Student - Form 137</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-light">
+
+    <div class="container mt-5">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Select Student for Form 137</h5>
+            </div>
+            <div class="card-body">
+
+                <?php if (count($students) > 0): ?>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Student No</th>
+                                <th>Name</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($students as $s): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($s['student_no']) ?></td>
+                                    <td><?= htmlspecialchars($s['name']) ?></td>
+                                    <td>
+                                        <a href="form137.php?id=<?= $s['id'] ?>" class="btn btn-sm btn-success">
+                                            View Form 137
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php else: ?>
+                    <p class="text-center">No students found in your section.</p>
+                <?php endif; ?>
+
+            </div>
+        </div>
+    </div>
+
+    </body>
+    </html>
+    <?php
+    exit;
+}
+
+/* ===============================
+   EXISTING LOGIC BELOW (UNCHANGED)
+   =============================== */
 
 // Fetch student info
 $student_stmt = $pdo->prepare("
@@ -59,7 +127,6 @@ $grades = $grades_stmt->fetchAll(PDO::FETCH_ASSOC);
       background: #f0f0f0;
       padding: 20px;
     }
-
     .form137 {
       position: relative;
       background: #fff;
@@ -69,91 +136,32 @@ $grades = $grades_stmt->fetchAll(PDO::FETCH_ASSOC);
       margin: 30px auto;
       padding: 40px;
     }
-
-    /* Background Form Image */
     .form137::before {
       content: "";
       position: absolute;
       inset: 0;
       background: url('../form137_bg.png') no-repeat center top;
       background-size: cover;
-      opacity: 0.15; /* Adjust transparency for readability */
+      opacity: 0.15;
       z-index: 0;
     }
-
     .content {
       position: relative;
       z-index: 2;
     }
-
-    .header {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-
-    .header h3 {
-      margin: 0;
-      font-weight: bold;
-    }
-
-    .header h5 {
-      margin: 5px 0 15px;
-      font-weight: normal;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
-
     table, th, td {
       border: 1px solid #000;
     }
-
     th, td {
       padding: 6px;
       text-align: center;
     }
-
     .print-btn {
       text-align: center;
       margin-top: 30px;
     }
-
-    .print-btn button {
-      background-color: #1e40af;
-      color: white;
-      border: none;
-      padding: 10px 25px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .print-btn button:hover {
-      background-color: #16347d;
-    }
-
     @media print {
-      .print-btn {
-        display: none;
-      }
-
-      body {
-        background: none;
-        -webkit-print-color-adjust: exact;
-      }
-
-      .form137 {
-        box-shadow: none;
-        border: none;
-        margin: 0;
-        padding: 0;
-      }
-
-      .form137::before {
-        opacity: 0.3; /* Make background clearer when printing */
-      }
+      .print-btn { display: none; }
     }
   </style>
 </head>
@@ -161,23 +169,19 @@ $grades = $grades_stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <div class="form137">
   <div class="content">
-    <div class="header">
-      <h3>AMLAN NATIONAL HIGH SCHOOL</h3>
-      <h5>Form 137 - Student Permanent Record</h5>
-      <hr>
-    </div>
+    <h3 class="text-center">AMLAN NATIONAL HIGH SCHOOL</h3>
+    <h5 class="text-center">Form 137 - Student Permanent Record</h5>
+    <hr>
 
-    <div class="mb-4">
-      <p><strong>Student Name:</strong> <?= htmlspecialchars($student['name']) ?></p>
-      <p><strong>Student No:</strong> <?= htmlspecialchars($student['student_no']) ?></p>
-      <p><strong>Class:</strong> <?= htmlspecialchars($student['class']) ?></p>
-      <p><strong>Email:</strong> <?= htmlspecialchars($student['email']) ?></p>
-      <p><strong>Adviser:</strong> <?= htmlspecialchars($_SESSION['user']['name']) ?></p>
-      <p><strong>Section:</strong> <?= htmlspecialchars($adviser_data['section']) ?></p>
-    </div>
+    <p><strong>Student Name:</strong> <?= htmlspecialchars($student['name']) ?></p>
+    <p><strong>Student No:</strong> <?= htmlspecialchars($student['student_no']) ?></p>
+    <p><strong>Class:</strong> <?= htmlspecialchars($student['class']) ?></p>
+    <p><strong>Email:</strong> <?= htmlspecialchars($student['email']) ?></p>
+    <p><strong>Adviser:</strong> <?= htmlspecialchars($_SESSION['user']['name']) ?></p>
+    <p><strong>Section:</strong> <?= htmlspecialchars($adviser_data['section']) ?></p>
 
-    <h5 class="text-center">Academic Records</h5>
-    <table>
+    <h5 class="text-center mt-4">Academic Records</h5>
+    <table width="100%">
       <thead>
         <tr>
           <th>Subject</th>
@@ -201,7 +205,7 @@ $grades = $grades_stmt->fetchAll(PDO::FETCH_ASSOC);
     </table>
 
     <div class="print-btn">
-      <button onclick="window.print()">🖨️ Print Form 137</button>
+      <button onclick="window.print()" class="btn btn-primary mt-3">🖨️ Print Form 137</button>
     </div>
   </div>
 </div>
