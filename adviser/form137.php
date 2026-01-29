@@ -118,96 +118,171 @@ $grades = $grades_stmt->fetchAll(PDO::FETCH_ASSOC);
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Form 137 - <?= htmlspecialchars($student['name']) ?></title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Times New Roman', serif;
-      background: #f0f0f0;
-      padding: 20px;
-    }
-    .form137 {
-      position: relative;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.15);
-      max-width: 850px;
-      margin: 30px auto;
-      padding: 40px;
-    }
-    .form137::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: url('../form137_bg.png') no-repeat center top;
-      background-size: cover;
-      opacity: 0.15;
-      z-index: 0;
-    }
-    .content {
-      position: relative;
-      z-index: 2;
-    }
-    table, th, td {
-      border: 1px solid #000;
-    }
-    th, td {
-      padding: 6px;
-      text-align: center;
-    }
+<meta charset="UTF-8">
+<title>Form 137 - <?= htmlspecialchars($student['name']) ?></title>
+
+<style>
+body {
+    font-family: "Times New Roman", serif;
+    background: #fff;
+    margin: 0;
+    padding: 20px;
+}
+
+.form-container {
+    width: 100%;
+    max-width: 900px;
+    margin: auto;
+    border: 1px solid #000;
+    padding: 20px;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.header h4, .header h5 {
+    margin: 0;
+    font-weight: bold;
+}
+
+.header p {
+    margin: 2px 0;
+    font-size: 13px;
+}
+
+.section-title {
+    text-align: center;
+    font-weight: bold;
+    margin: 15px 0 8px;
+    text-transform: uppercase;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+table, th, td {
+    border: 1px solid #000;
+}
+
+th, td {
+    padding: 5px;
+    text-align: center;
+}
+
+.info-table td {
+    text-align: left;
+    padding: 6px;
+}
+
+.print-btn {
+    text-align: center;
+    margin-top: 20px;
+}
+
+@media print {
     .print-btn {
-      text-align: center;
-      margin-top: 30px;
+        display: none;
     }
-    @media print {
-      .print-btn { display: none; }
-    }
-  </style>
+}
+</style>
 </head>
+
 <body>
 
-<div class="form137">
-  <div class="content">
-    <h3 class="text-center">AMLAN NATIONAL HIGH SCHOOL</h3>
-    <h5 class="text-center">Form 137 - Student Permanent Record</h5>
-    <hr>
+<div class="form-container">
 
-    <p><strong>Student Name:</strong> <?= htmlspecialchars($student['name']) ?></p>
-    <p><strong>Student No:</strong> <?= htmlspecialchars($student['student_no']) ?></p>
-    <p><strong>Class:</strong> <?= htmlspecialchars($student['class']) ?></p>
-    <p><strong>Email:</strong> <?= htmlspecialchars($student['email']) ?></p>
-    <p><strong>Adviser:</strong> <?= htmlspecialchars($_SESSION['user']['name']) ?></p>
-    <p><strong>Section:</strong> <?= htmlspecialchars($adviser_data['section']) ?></p>
+    <!-- HEADER -->
+    <div class="header">
+        <h4>DEPARTMENT OF EDUCATION</h4>
+        <p>Region VII – Central Visayas</p>
+        <p>Division of Negros Oriental</p>
+        <h5>AMLAN NATIONAL HIGH SCHOOL</h5>
+        <p>Amlan, Negros Oriental</p>
+        <br>
+        <strong>STUDENT PERMANENT RECORD (FORM 137)</strong>
+    </div>
 
-    <h5 class="text-center mt-4">Academic Records</h5>
-    <table width="100%">
-      <thead>
+    <!-- STUDENT INFO -->
+    <div class="section-title">Student Information</div>
+    <table class="info-table">
         <tr>
-          <th>Subject</th>
-          <th>Period</th>
-          <th>Grade</th>
+            <td width="25%"><strong>Student Name</strong></td>
+            <td width="75%"><?= htmlspecialchars($student['name']) ?></td>
         </tr>
-      </thead>
-      <tbody>
-        <?php if (count($grades) > 0): ?>
-          <?php foreach ($grades as $g): ?>
+        <tr>
+            <td><strong>Student Number</strong></td>
+            <td><?= htmlspecialchars($student['student_no']) ?></td>
+        </tr>
+        <tr>
+            <td><strong>Class</strong></td>
+            <td><?= htmlspecialchars($student['class']) ?></td>
+        </tr>
+        <tr>
+            <td><strong>Email</strong></td>
+            <td><?= htmlspecialchars($student['email']) ?></td>
+        </tr>
+        <tr>
+            <td><strong>Adviser</strong></td>
+            <td><?= htmlspecialchars($_SESSION['user']['name']) ?></td>
+        </tr>
+        <tr>
+            <td><strong>Section</strong></td>
+            <td><?= htmlspecialchars($adviser_data['section']) ?></td>
+        </tr>
+    </table>
+
+    <!-- ACADEMIC RECORDS -->
+    <div class="section-title">Academic Records</div>
+    <table>
+        <thead>
             <tr>
-              <td><?= htmlspecialchars($g['subject']) ?></td>
-              <td><?= htmlspecialchars($g['period']) ?></td>
-              <td><?= htmlspecialchars($g['grade']) ?></td>
+                <th width="50%">Subject</th>
+                <th width="25%">Period</th>
+                <th width="25%">Final Grade</th>
             </tr>
-          <?php endforeach; ?>
+        </thead>
+        <tbody>
+        <?php if (count($grades) > 0): ?>
+            <?php foreach ($grades as $g): ?>
+                <tr>
+                    <td><?= htmlspecialchars($g['subject']) ?></td>
+                    <td><?= htmlspecialchars($g['period']) ?></td>
+                    <td><?= htmlspecialchars($g['grade']) ?></td>
+                </tr>
+            <?php endforeach; ?>
         <?php else: ?>
-          <tr><td colspan="3">No grades recorded.</td></tr>
+            <tr>
+                <td colspan="3">No grades recorded.</td>
+            </tr>
         <?php endif; ?>
-      </tbody>
+        </tbody>
+    </table>
+
+    <!-- FOOTER -->
+    <br><br>
+    <table class="info-table">
+        <tr>
+            <td width="50%">
+                <strong>Certified Correct:</strong><br><br>
+                _______________________________<br>
+                <em>Class Adviser</em>
+            </td>
+            <td width="50%">
+                <strong>Date:</strong><br><br>
+                _______________________________
+            </td>
+        </tr>
     </table>
 
     <div class="print-btn">
-      <button onclick="window.print()" class="btn btn-primary mt-3">🖨️ Print Form 137</button>
+        <button onclick="window.print()">🖨️ Print Form 137</button>
     </div>
-  </div>
+
 </div>
 
 </body>
