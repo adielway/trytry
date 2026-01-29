@@ -17,6 +17,15 @@ if ($user['role'] === 'student') {
     $row = $stmt->fetch();
     $student_id = $row ? (int)$row['id'] : null;
 }
+
+/* ==============================
+   ADDITION: Grade level selector
+   (NO logic changed)
+================================ */
+$allowed_levels = [7, 8, 9, 10];
+$selected_level = isset($_GET['level']) && in_array((int)$_GET['level'], $allowed_levels)
+    ? (int)$_GET['level']
+    : 7;
 ?>
 <!doctype html>
 <html lang="en">
@@ -26,26 +35,28 @@ if ($user['role'] === 'student') {
   <title>Dashboard</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-  body {
-    background-color: #4169E1;
-    min-height: 100vh;
-  }
-  .card {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-  }
-  .navbar {
-    background-color: #27408B !important;
-  }
-  .navbar .navbar-brand, .navbar .navbar-text, .navbar .btn {
-    color: white !important;
-  }
-  .navbar .btn:hover {
-    background-color: #1E90FF !important;
-    color: #fff !important;
-    border-color: #1E90FF !important;
-  }
+    body {
+      background-color: #4169E1;
+      min-height: 100vh;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .navbar {
+      background-color: #27408B !important;
+    }
+    .navbar .navbar-brand,
+    .navbar .navbar-text,
+    .navbar .btn {
+      color: white !important;
+    }
+    .navbar .btn:hover {
+      background-color: #1E90FF !important;
+      color: #fff !important;
+      border-color: #1E90FF !important;
+    }
   </style>
 </head>
 <body>
@@ -71,10 +82,22 @@ if ($user['role'] === 'student') {
         $stmt->execute([$student_id]);
         $s = $stmt->fetch();
       ?>
-        <h5 class="mb-3">
+        <h5 class="mb-2">
           <?= h($s['name']) ?>
           <span class="text-muted small">/ <?= h($s['class']) ?></span>
         </h5>
+
+        <!-- ✅ Grade level dropdown (ADDITION ONLY) -->
+        <form method="GET" class="mb-3">
+          <label class="form-label fw-semibold">School Year / Grade Level</label>
+          <select name="level" class="form-select w-auto" onchange="this.form.submit()">
+            <?php foreach ([7,8,9,10] as $lvl): ?>
+              <option value="<?= $lvl ?>" <?= $selected_level == $lvl ? 'selected' : '' ?>>
+                Grade <?= $lvl ?>
+              </option>
+            <?php endforeach; ?>
+          </select>
+        </form>
 
         <?php
         $quarters = [1, 2, 3, 4];
@@ -88,14 +111,20 @@ if ($user['role'] === 'student') {
 
           echo '<div class="col-md-6">';
 
+          /* ==============================
+             ONLY QUERY CHANGE:
+             added g.grade_level = ?
+             ============================== */
           $stmt = $pdo->prepare("
             SELECT sub.name AS subject, g.grade
             FROM grades g
             JOIN subjects sub ON sub.id = g.subject_id
-            WHERE g.student_id = ? AND g.period = ?
+            WHERE g.student_id = ?
+              AND g.period = ?
+              AND g.grade_level = ?
             ORDER BY sub.name
           ");
-          $stmt->execute([$student_id, $q]);
+          $stmt->execute([$student_id, $q, $selected_level]);
           $grades = $stmt->fetchAll();
 
           echo "<h5 class='mt-3'>Quarter $q</h5>";
