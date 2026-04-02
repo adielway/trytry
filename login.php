@@ -196,6 +196,48 @@ body::before {
 .chat-body {
   scroll-behavior: smooth;
 }
+
+/* Smooth open/close */
+#chat-box {
+  width: 300px;
+  height: 400px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  opacity: 0;
+  transform: translateY(20px) scale(0.95);
+  pointer-events: none;
+  transition: all 0.25s ease;
+}
+
+#chat-box.chat-show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+/* message animation */
+.bot-msg {
+  background: #f1f5f9;
+  padding: 8px;
+  margin-bottom: 6px;
+  border-radius: 8px;
+  animation: fadeIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+  from {opacity: 0; transform: translateY(5px);}
+  to {opacity: 1; transform: translateY(0);}
+}
+
+/* input improvements */
+.chat-input input:focus {
+  outline: none;
+}
   </style>
 </head>
 <body>
@@ -251,86 +293,122 @@ body::before {
   <!-- optional bootstrap JS (not required for styles) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-   <!-- FAQ Chatbot -->
-<div id="faq-chatbot">
+  <div id="faq-chatbot">
   <div id="chat-toggle">💬 FAQ</div>
 
-  <div id="chat-box" class="d-none">
+  <div id="chat-box" class="chat-hidden">
     <div class="chat-header">
       ANHS Help Desk
       <span id="close-chat">✖</span>
     </div>
 
     <div class="chat-body" id="chat-body"></div>
+
+    <div class="chat-input">
+      <input type="text" id="user-input" placeholder="Ask a question...">
+      <button onclick="sendMessage()">Send</button>
+    </div>
   </div>
 </div>
 
 <script>
-// FAQ database (clean + structured)
-const faqs = [
-  {
-    question: "How can I change my password?",
-    answer: "Please approach your adviser or any staff in ANHS to request password change."
-  },
-  {
-    question: "Where to get Form 137?",
-    answer: "Proceed to the School Clerk to inquire about Form 137."
-  },
-  {
-    question: "I forgot my email",
-    answer: "Please contact your adviser to verify your registered email."
-  },
-  {
-    question: "Grades not showing",
-    answer: "If your grades are not showing, inform your subject teacher or adviser."
-  }
-];
-
 const chatBox = document.getElementById("chat-box");
 const chatBody = document.getElementById("chat-body");
+const input = document.getElementById("user-input");
 
-// 🧠 Initialize chatbot (clean every time)
+let badCount = 0;
+
+// ✅ keyword-based responses
+const responses = {
+  password: "Please approach your adviser or any staff in ANHS to request password change.",
+  form: "Proceed to the School Clerk to inquire about Form 137.",
+  email: "Please contact your adviser to verify your registered email.",
+  grades: "If your grades are not showing, inform your subject teacher or adviser."
+};
+
+// ❌ inappropriate words filter
+const badWords = ["bobo", "tanga", "gago", "fuck", "shit", "ulol"];
+
+// 🧠 initialize chat
 function initChat() {
-  chatBody.innerHTML = `
-    <div class="bot-msg">Hi! Please select a question 👇</div>
-  `;
-
-  faqs.forEach((faq, index) => {
-    chatBody.innerHTML += `
-      <button class="faq-btn" onclick="answerFAQ(${index})">
-        ${faq.question}
-      </button>
-    `;
-  });
+  chatBody.innerHTML = `<div class="bot-msg">Hi! Ask your question 😊</div>`;
+  badCount = 0;
 }
 
-// 🎯 Answer handler
-function answerFAQ(index) {
-  const faq = faqs[index];
+// 🔘 toggle chatbot
+document.getElementById("chat-toggle").onclick = () => {
+  chatBox.classList.toggle("chat-show");
 
+  if (chatBox.classList.contains("chat-show")) {
+    initChat();
+  }
+};
+
+// ❌ close chatbot
+document.getElementById("close-chat").onclick = () => {
+  chatBox.classList.remove("chat-show");
+  chatBody.innerHTML = "";
+};
+
+// 🎯 send message
+function sendMessage() {
+  const text = input.value.trim().toLowerCase();
+  if (!text) return;
+
+  appendMessage("You", text);
+
+  setTimeout(() => {
+    processMessage(text);
+  }, 300); // typing delay
+
+  input.value = "";
+}
+
+// 🧠 process logic
+function processMessage(text) {
+  // ❌ check bad words
+  for (let word of badWords) {
+    if (text.includes(word)) {
+      badCount++;
+
+      if (badCount >= 2) {
+        appendMessage("Bot", "Please do not ask inappropriate questions.");
+      } else {
+        appendMessage("Bot", "⚠️ Please keep your questions appropriate.");
+      }
+      return;
+    }
+  }
+
+  // ✅ keyword matching
+  for (let key in responses) {
+    if (text.includes(key)) {
+      appendMessage("Bot", responses[key]);
+      return;
+    }
+  }
+
+  // ❓ fallback (nonsense)
+  appendMessage("Bot", "Sorry, I don't understand. Please clarify your question.");
+}
+
+// 💬 append message
+function appendMessage(sender, text) {
   chatBody.innerHTML += `
-    <div class="bot-msg"><strong>You:</strong> ${faq.question}</div>
-    <div class="bot-msg">${faq.answer}</div>
+    <div class="bot-msg">
+      <strong>${sender}:</strong> ${text}
+    </div>
   `;
 
-  // scroll to bottom
   chatBody.scrollTop = chatBody.scrollHeight;
 }
 
-// 🔘 Toggle chatbot (WITH RESET)
-document.getElementById("chat-toggle").onclick = () => {
-  chatBox.classList.toggle("d-none");
-
-  if (!chatBox.classList.contains("d-none")) {
-    initChat(); // reset when opened
+// ⌨️ enter key support
+input.addEventListener("keypress", function(e) {
+  if (e.key === "Enter") {
+    sendMessage();
   }
-};
-
-// ❌ Close chatbot (ALSO RESET)
-document.getElementById("close-chat").onclick = () => {
-  chatBox.classList.add("d-none");
-  chatBody.innerHTML = ""; // clear everything
-};
+});
 </script>
 </body>
 </html>
