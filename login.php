@@ -99,6 +99,98 @@ body::before {
       .login-top { padding: 14px; }
       .login-card .card-body { padding: 18px; }
     }
+
+    /* Chatbot container */
+#faq-chatbot {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+}
+
+/* Toggle button */
+#chat-toggle {
+  background: #1e40af;
+  color: #fff;
+  padding: 10px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* Chat box */
+#chat-box {
+  width: 300px;
+  height: 400px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Header */
+.chat-header {
+  background: #1e40af;
+  color: #fff;
+  padding: 10px;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Body */
+.chat-body {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  font-size: 13px;
+}
+
+/* Messages */
+.bot-msg {
+  background: #f1f5f9;
+  padding: 8px;
+  margin-bottom: 5px;
+  border-radius: 8px;
+}
+
+/* FAQ buttons */
+.faq-btn {
+  width: 100%;
+  margin-top: 5px;
+  padding: 6px;
+  border: none;
+  background: #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.faq-btn:hover {
+  background: #cbd5f5;
+}
+
+/* Input */
+.chat-input {
+  display: flex;
+  border-top: 1px solid #ddd;
+}
+
+.chat-input input {
+  flex: 1;
+  border: none;
+  padding: 8px;
+  font-size: 13px;
+}
+
+.chat-input button {
+  background: #1e40af;
+  color: #fff;
+  border: none;
+  padding: 8px;
+}
   </style>
 </head>
 <body>
@@ -153,5 +245,79 @@ body::before {
 
   <!-- optional bootstrap JS (not required for styles) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- FAQ Chatbot -->
+<div id="faq-chatbot">
+  <div id="chat-toggle">💬 FAQ</div>
+
+  <div id="chat-box" class="d-none">
+    <div class="chat-header">
+      ANHS Help Desk
+      <span id="close-chat" style="cursor:pointer;">✖</span>
+    </div>
+
+    <div class="chat-body" id="chat-body">
+      <div class="bot-msg">Hi! Ask a question or click below 👇</div>
+
+      <button class="faq-btn">How can I change my password?</button>
+      <button class="faq-btn">Where to get Form 137?</button>
+      <button class="faq-btn">I forgot my email</button>
+      <button class="faq-btn">Grades not showing</button>
+    </div>
+
+    <div class="chat-input">
+      <input type="text" id="user-input" placeholder="Type your question...">
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+</div>
+
+    <script>
+const responses = {
+  "password": "Please approach your adviser or any staff in ANHS to request password change.",
+  "form 137": "Proceed to the School Clerk to inquire about Form 137.",
+  "forgot email": "Please contact your adviser to verify your registered email.",
+  "grades": "If your grades are not showing, inform your subject teacher or adviser."
+};
+
+document.getElementById("chat-toggle").onclick = () => {
+  document.getElementById("chat-box").classList.toggle("d-none");
+};
+
+document.getElementById("close-chat").onclick = () => {
+  document.getElementById("chat-box").classList.add("d-none");
+};
+
+document.querySelectorAll(".faq-btn").forEach(btn => {
+  btn.onclick = () => reply(btn.innerText);
+});
+
+function sendMessage() {
+  const input = document.getElementById("user-input");
+  const text = input.value.toLowerCase();
+  if (!text) return;
+
+  reply(text);
+  input.value = "";
+}
+
+function reply(text) {
+  let answer = "Sorry, please ask from the available questions.";
+
+  for (let key in responses) {
+    if (text.includes(key)) {
+      answer = responses[key];
+      break;
+    }
+  }
+
+  const chatBody = document.getElementById("chat-body");
+
+  chatBody.innerHTML += `<div class="bot-msg"><strong>You:</strong> ${text}</div>`;
+  chatBody.innerHTML += `<div class="bot-msg">${answer}</div>`;
+
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
+</script>
 </body>
 </html>
