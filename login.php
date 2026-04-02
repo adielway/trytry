@@ -100,7 +100,7 @@ body::before {
       .login-card .card-body { padding: 18px; }
     }
 
-    /* Chatbot container */
+  /* Container */
 #faq-chatbot {
   position: fixed;
   bottom: 20px;
@@ -108,26 +108,26 @@ body::before {
   z-index: 9999;
 }
 
-/* Toggle button */
+/* Button (make it floating circle style for less obstruction) */
 #chat-toggle {
   background: #1e40af;
   color: #fff;
-  padding: 10px 15px;
-  border-radius: 20px;
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
   cursor: pointer;
-  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
-/* Chat box */
+/* Chatbox position (appears above the button) */
 #chat-box {
-  width: 300px;
-  height: 400px;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  position: absolute;
+  bottom: 70px; /* pushes it above the button */
+  right: 0;
 }
 
 /* Header */
@@ -320,14 +320,14 @@ let badCount = 0;
 
 // ✅ keyword-based responses
 const responses = {
-  password: "Please approach your adviser or any staff in ANHS to request password change.",
-  form: "Proceed to the School Clerk to inquire about Form 137.",
+  password: "Please approach your adviser to inquire about your password.",
+  form: "Proceed to the School Clerk to inquire about all school form related problems and questions.",
   email: "Please contact your adviser to verify your registered email.",
-  grades: "If your grades are not showing, inform your subject teacher or adviser."
+  grades: "If you have questions about your grade, please approach and inform your subject teacher or adviser."
 };
 
 // ❌ inappropriate words filter
-const badWords = ["bobo", "tanga", "gago", "fuck", "shit", "ulol"];
+const badWords = ["bobo", "tanga", "gago", "fuck", "shit", "ulol", "buang", "yawa", "piste", "bading"];
 
 // 🧠 initialize chat
 function initChat() {
