@@ -191,6 +191,11 @@ body::before {
   border: none;
   padding: 8px;
 }
+
+/* smoother scroll */
+.chat-body {
+  scroll-behavior: smooth;
+}
   </style>
 </head>
 <body>
@@ -246,78 +251,86 @@ body::before {
   <!-- optional bootstrap JS (not required for styles) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- FAQ Chatbot -->
+   <!-- FAQ Chatbot -->
 <div id="faq-chatbot">
   <div id="chat-toggle">💬 FAQ</div>
 
   <div id="chat-box" class="d-none">
     <div class="chat-header">
       ANHS Help Desk
-      <span id="close-chat" style="cursor:pointer;">✖</span>
+      <span id="close-chat">✖</span>
     </div>
 
-    <div class="chat-body" id="chat-body">
-      <div class="bot-msg">Hi! Ask a question or click below 👇</div>
-
-      <button class="faq-btn">How can I change my password?</button>
-      <button class="faq-btn">Where to get Form 137?</button>
-      <button class="faq-btn">I forgot my email</button>
-      <button class="faq-btn">Grades not showing</button>
-    </div>
-
-    <div class="chat-input">
-      <input type="text" id="user-input" placeholder="Type your question...">
-      <button onclick="sendMessage()">Send</button>
-    </div>
+    <div class="chat-body" id="chat-body"></div>
   </div>
 </div>
 
-    <script>
-const responses = {
-  "password": "Please approach your adviser or any staff in ANHS to request password change.",
-  "form 137": "Proceed to the School Clerk to inquire about Form 137.",
-  "forgot email": "Please contact your adviser to verify your registered email.",
-  "grades": "If your grades are not showing, inform your subject teacher or adviser."
-};
+<script>
+// FAQ database (clean + structured)
+const faqs = [
+  {
+    question: "How can I change my password?",
+    answer: "Please approach your adviser or any staff in ANHS to request password change."
+  },
+  {
+    question: "Where to get Form 137?",
+    answer: "Proceed to the School Clerk to inquire about Form 137."
+  },
+  {
+    question: "I forgot my email",
+    answer: "Please contact your adviser to verify your registered email."
+  },
+  {
+    question: "Grades not showing",
+    answer: "If your grades are not showing, inform your subject teacher or adviser."
+  }
+];
 
-document.getElementById("chat-toggle").onclick = () => {
-  document.getElementById("chat-box").classList.toggle("d-none");
-};
+const chatBox = document.getElementById("chat-box");
+const chatBody = document.getElementById("chat-body");
 
-document.getElementById("close-chat").onclick = () => {
-  document.getElementById("chat-box").classList.add("d-none");
-};
+// 🧠 Initialize chatbot (clean every time)
+function initChat() {
+  chatBody.innerHTML = `
+    <div class="bot-msg">Hi! Please select a question 👇</div>
+  `;
 
-document.querySelectorAll(".faq-btn").forEach(btn => {
-  btn.onclick = () => reply(btn.innerText);
-});
-
-function sendMessage() {
-  const input = document.getElementById("user-input");
-  const text = input.value.toLowerCase();
-  if (!text) return;
-
-  reply(text);
-  input.value = "";
+  faqs.forEach((faq, index) => {
+    chatBody.innerHTML += `
+      <button class="faq-btn" onclick="answerFAQ(${index})">
+        ${faq.question}
+      </button>
+    `;
+  });
 }
 
-function reply(text) {
-  let answer = "Sorry, please ask from the available questions.";
+// 🎯 Answer handler
+function answerFAQ(index) {
+  const faq = faqs[index];
 
-  for (let key in responses) {
-    if (text.includes(key)) {
-      answer = responses[key];
-      break;
-    }
-  }
+  chatBody.innerHTML += `
+    <div class="bot-msg"><strong>You:</strong> ${faq.question}</div>
+    <div class="bot-msg">${faq.answer}</div>
+  `;
 
-  const chatBody = document.getElementById("chat-body");
-
-  chatBody.innerHTML += `<div class="bot-msg"><strong>You:</strong> ${text}</div>`;
-  chatBody.innerHTML += `<div class="bot-msg">${answer}</div>`;
-
+  // scroll to bottom
   chatBody.scrollTop = chatBody.scrollHeight;
 }
+
+// 🔘 Toggle chatbot (WITH RESET)
+document.getElementById("chat-toggle").onclick = () => {
+  chatBox.classList.toggle("d-none");
+
+  if (!chatBox.classList.contains("d-none")) {
+    initChat(); // reset when opened
+  }
+};
+
+// ❌ Close chatbot (ALSO RESET)
+document.getElementById("close-chat").onclick = () => {
+  chatBox.classList.add("d-none");
+  chatBody.innerHTML = ""; // clear everything
+};
 </script>
 </body>
 </html>
