@@ -108,17 +108,19 @@ body::before {
   z-index: 9999;
 }
 
-/* Button (make it floating circle style for less obstruction) */
 #chat-toggle {
   background: #1e40af;
   color: #fff;
-  width: 55px;
-  height: 55px;
+  width: 70px;           /* increase size to fit "FAQ" text */
+  height: 70px;
   border-radius: 50%;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
+  align-items: center;   /* vertical center */
+  justify-content: center; /* horizontal center */
+  font-size: 14px;       /* adjust text size */
+  font-weight: 600;
+  text-align: center;
+
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
@@ -294,7 +296,7 @@ body::before {
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
   <div id="faq-chatbot">
-  <div id="chat-toggle">💬 FAQ</div>
+  <div id="chat-toggle">💬FAQ</div>
 
   <div id="chat-box" class="chat-hidden">
     <div class="chat-header">
