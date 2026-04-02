@@ -118,7 +118,7 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  font-size: 18px;
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
