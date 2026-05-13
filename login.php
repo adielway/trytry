@@ -320,7 +320,7 @@ const input = document.getElementById("user-input");
 
 let badCount = 0;
 
-// ✅ keyword-based responses
+
 const responses = {
   password: "Please approach your adviser to inquire about your password.",
   form: "Proceed to the School Clerk to inquire about all school form related problems and questions.",
@@ -328,16 +328,16 @@ const responses = {
   grades: "If you have questions about your grade, please approach and inform your subject teacher or adviser."
 };
 
-// ❌ inappropriate words filter
+
 const badWords = ["bobo", "tanga", "gago", "fuck", "shit", "ulol", "buang", "yawa", "piste", "bading"];
 
-// 🧠 initialize chat
+
 function initChat() {
   chatBody.innerHTML = `<div class="bot-msg">Hi! Ask your question 😊</div>`;
   badCount = 0;
 }
 
-// 🔘 toggle chatbot
+
 document.getElementById("chat-toggle").onclick = () => {
   chatBox.classList.toggle("chat-show");
 
@@ -346,13 +346,13 @@ document.getElementById("chat-toggle").onclick = () => {
   }
 };
 
-// ❌ close chatbot
+
 document.getElementById("close-chat").onclick = () => {
   chatBox.classList.remove("chat-show");
   chatBody.innerHTML = "";
 };
 
-// 🎯 send message
+
 function sendMessage() {
   const text = input.value.trim().toLowerCase();
   if (!text) return;
@@ -366,9 +366,8 @@ function sendMessage() {
   input.value = "";
 }
 
-// 🧠 process logic
+
 function processMessage(text) {
-  // ❌ check bad words
   for (let word of badWords) {
     if (text.includes(word)) {
       badCount++;
@@ -382,7 +381,7 @@ function processMessage(text) {
     }
   }
 
-  // ✅ keyword matching
+  
   for (let key in responses) {
     if (text.includes(key)) {
       appendMessage("Bot", responses[key]);
@@ -390,11 +389,11 @@ function processMessage(text) {
     }
   }
 
-  // ❓ fallback (nonsense)
+
   appendMessage("Bot", "Sorry, I don't understand. Please clarify your question.");
 }
 
-// 💬 append message
+
 function appendMessage(sender, text) {
   chatBody.innerHTML += `
     <div class="bot-msg">
@@ -405,7 +404,7 @@ function appendMessage(sender, text) {
   chatBody.scrollTop = chatBody.scrollHeight;
 }
 
-// ⌨️ enter key support
+
 input.addEventListener("keypress", function(e) {
   if (e.key === "Enter") {
     sendMessage();
